@@ -15,7 +15,6 @@ const DB_PATH = process.env.KB_DB_PATH || (
     ? '/tmp/kb-realtime.sqlite'
     : path.join(ROOT, 'data', 'kb-realtime.sqlite')
 );
-
 const ADMIN_EMAIL = String(process.env.KB_ADMIN_EMAIL || 'admin@example.local').toLowerCase();
 const ADMIN_PASSWORD = process.env.KB_ADMIN_PASSWORD || '';
 const TEST_MODE = process.env.KB_TEST_MODE === '1';
