@@ -1,0 +1,11 @@
+{
+  "name": "kb-bank-realtime-admin",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node tests/integration.test.js"
+  },
+  "engines": { "node": ">=22.5.0" }
+}
