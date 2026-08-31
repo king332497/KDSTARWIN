@@ -9,7 +9,13 @@ const { DatabaseSync } = require('node:sqlite');
 const ROOT = __dirname;
 const PUBLIC = path.join(ROOT, 'public');
 const PORT = Number(process.env.PORT || 3000);
-const DB_PATH = path.resolve(ROOT, process.env.KB_DB_PATH || './data/kb-realtime.sqlite');
+
+const DB_PATH = process.env.KB_DB_PATH || (
+  process.env.VERCEL
+    ? '/tmp/kb-realtime.sqlite'
+    : path.join(ROOT, 'data', 'kb-realtime.sqlite')
+);
+
 const ADMIN_EMAIL = String(process.env.KB_ADMIN_EMAIL || 'admin@example.local').toLowerCase();
 const ADMIN_PASSWORD = process.env.KB_ADMIN_PASSWORD || '';
 const TEST_MODE = process.env.KB_TEST_MODE === '1';
