@@ -373,7 +373,7 @@ tbody tr{transition:background var(--motion-fast) ease}
 /* Admin-managed Hero Visual */
 .hero-editor-grid{display:grid;grid-template-columns:minmax(260px,.9fr) minmax(320px,1.1fr);gap:18px;padding:16px}
 .hero-editor-preview{min-height:360px;display:grid;place-items:center;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#fbf8ff,#fffaf0);overflow:hidden}
-.hero-editor-preview img{display:block;width:100%;max-width:420px;max-height:420px;object-fit:contain;border-radius:18px;box-shadow:0 18px 46px rgba(63,23,89,.16)}
+.hero-editor-preview img{display:block;width:100%;max-width:420px;max-height:420px;object-fit:contain;border-radius:18px;box-shadow:0 18px 46px rgba(63,23,89,.16);transition:opacity .28s ease,transform .28s ease}.hero-editor-thumbs{display:flex;flex-wrap:wrap;gap:7px;margin-top:8px}.hero-editor-thumb{width:52px;height:52px;border:2px solid transparent;border-radius:10px;object-fit:cover;background:#fff}.hero-editor-thumb.active{border-color:var(--y)}
 .hero-editor-empty{max-width:280px;color:var(--muted);font-size:.78rem;line-height:1.55;text-align:center}
 .hero-editor-form{display:grid;gap:12px}
 .hero-editor-form .field{margin:0}
@@ -407,15 +407,15 @@ tbody tr{transition:background var(--motion-fast) ease}
       <button class="secondary" type="button" id="heroReload">Muat ulang</button>
     </div>
     <div class="hero-editor-grid">
-      <div class="hero-editor-preview">
+      <div><div class="hero-editor-preview">
         <img id="heroAdminPreview" alt="Preview hero" hidden>
         <div class="hero-editor-empty" id="heroAdminEmpty">Belum ada gambar custom. Website tetap menggunakan gambar bawaan sampai Anda mengunggah gambar baru.</div>
-      </div>
+      </div><div class="hero-editor-thumbs" id="heroAdminThumbs"></div></div>
       <form class="hero-editor-form" id="heroContentForm">
         <div class="field">
-          <label>Gambar utama</label>
-          <input id="heroImageFile" type="file" accept="image/png,image/jpeg,image/webp">
-          <p class="hero-file-note">PNG/JPG/WebP. Gambar otomatis dioptimalkan sebelum disimpan. Desain, posisi, radius, dan animasi existing tidak diubah.</p>
+          <label>Gambar slider otomatis (maks. 5)</label>
+          <input id="heroImageFile" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+          <p class="hero-file-note">Pilih 1–5 gambar sekaligus. Jika lebih dari satu, gambar berganti otomatis setiap ±5,5 detik dengan transisi halus. PNG/JPG/WebP dan otomatis dioptimalkan.</p>
         </div>
         <div class="field"><label>Label atas — Judul</label><input id="heroChipOneTitle" maxlength="48" required></div>
         <div class="field"><label>Label atas — Subjudul</label><input id="heroChipOneSubtitle" maxlength="80" required></div>

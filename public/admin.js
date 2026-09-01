@@ -56,8 +56,10 @@
   async function loadAudit(){if(!can('audit'))return;const d=await api('/api/admin/audit');$('#auditLog').innerHTML=(d.audit||[]).map(x=>`<div class="log-item"><time>${fmt(x.created_at)}</time><div><strong>${esc(x.action)}</strong> — ${esc(x.admin_name)} → ${esc(x.target_name||x.target_user_id||'system')}<br><small>Alasan: ${esc(x.reason||'—')}</small></div><span>${esc(x.new_state?.status||'')}</span></div>`).join('')||'<div class="log-item">Belum ada audit log.</div>'}
   async function loadActivity(){if(!can('monitor'))return;const d=await api('/api/admin/activity');$('#activityLog').innerHTML=(d.activity||[]).map(x=>`<div class="log-item"><time>${fmt(x.created_at)}</time><div><strong>${esc(x.full_name)}</strong> — ${esc(x.type)}<br><small>${esc(x.detail||'')}</small></div><span>${esc(x.session_id||'')}</span></div>`).join('')||'<div class="log-item">Belum ada activity.</div>'}
   async function loadAdmins(){if(!can('manage_admins'))return;const d=await api('/api/admin/admins');$('#adminCards').innerHTML=(d.admins||[]).map(a=>`<div class="list-card"><strong>${esc(a.full_name)}</strong><p>${esc(a.email)}<br>${esc(a.role)}</p></div>`).join('')}
-  let heroPendingImage=null;
+  let heroPendingImages=[];
   let heroLoaded=null;
+  let heroPreviewTimer=null;
+  let heroPreviewIndex=0;
 
   function heroFormPayload(extra={}) {
     return {
@@ -71,18 +73,22 @@
     };
   }
 
-  function setHeroPreview(src) {
-    const img=$('#heroAdminPreview'), empty=$('#heroAdminEmpty');
+  function setHeroPreview(sources) {
+    const img=$('#heroAdminPreview'), empty=$('#heroAdminEmpty'), thumbs=$('#heroAdminThumbs');
     if(!img||!empty)return;
-    if(src){
-      img.src=src;
-      img.hidden=false;
-      empty.hidden=true;
-    }else{
-      img.removeAttribute('src');
-      img.hidden=true;
-      empty.hidden=false;
+    clearInterval(heroPreviewTimer); heroPreviewTimer=null; heroPreviewIndex=0;
+    const list=(Array.isArray(sources)?sources:[sources]).filter(Boolean);
+    if(!list.length){
+      img.removeAttribute('src'); img.hidden=true; empty.hidden=false; if(thumbs)thumbs.innerHTML=''; return;
     }
+    empty.hidden=true; img.hidden=false;
+    const show=i=>{ heroPreviewIndex=i%list.length; img.style.opacity='0'; setTimeout(()=>{img.src=list[heroPreviewIndex];img.style.opacity='1'},120); if(thumbs)[...thumbs.children].forEach((x,n)=>x.classList.toggle('active',n===heroPreviewIndex)); };
+    if(thumbs){
+      thumbs.innerHTML=list.map((src,i)=>`<img class="hero-editor-thumb ${i===0?'active':''}" data-hero-thumb="${i}" src="${src}" alt="Preview ${i+1}">`).join('');
+      thumbs.querySelectorAll('[data-hero-thumb]').forEach(t=>t.onclick=()=>show(Number(t.dataset.heroThumb)));
+    }
+    show(0);
+    if(list.length>1) heroPreviewTimer=setInterval(()=>show((heroPreviewIndex+1)%list.length),2600);
   }
 
   async function loadHeroContent(){
@@ -99,9 +105,9 @@
       $('#heroChipTwoSubtitle').value=h.chip_two_subtitle||'';
       $('#heroCaption').value=h.caption||'';
       $('#heroImageAlt').value=h.image_alt||'';
-      heroPendingImage=null;
+      heroPendingImages=[];
       if($('#heroImageFile'))$('#heroImageFile').value='';
-      setHeroPreview(h.image_url||null);
+      setHeroPreview(h.image_urls?.length?h.image_urls:(h.image_url?[h.image_url]:[]));
       if(stateEl)stateEl.textContent=h.updated_at?`Terakhir disimpan ${fmt(h.updated_at)}`:'Menggunakan konfigurasi bawaan.';
     }catch(e){
       if(stateEl)stateEl.textContent=`Gagal memuat: ${e.message}`;
@@ -127,9 +133,9 @@
     const ctx=canvas.getContext('2d',{alpha:true});
     ctx.drawImage(bitmap,0,0,width,height);
     bitmap.close?.();
-    for(const quality of [.88,.80,.72,.64,.56]){
+    for(const quality of [.86,.78,.70,.62,.54,.46]){
       const data=canvas.toDataURL('image/webp',quality);
-      if(dataUrlBytes(data)<=560*1024) return data;
+      if(dataUrlBytes(data)<=410*1024) return data;
     }
     throw new Error('Gambar masih terlalu besar setelah optimasi. Gunakan gambar yang lebih kecil.');
   }
@@ -140,14 +146,14 @@
     if(stateEl)stateEl.textContent='Menyimpan…';
     try{
       const body=heroFormPayload({
-        ...(heroPendingImage?{image_data:heroPendingImage}:{}),
+        ...(heroPendingImages.length?{images_data:heroPendingImages}:{}),
         ...(removeImage?{remove_image:true}:{})
       });
       const d=await api('/api/admin/content/hero',{method:'PUT',body:JSON.stringify(body)});
-      heroPendingImage=null;
+      heroPendingImages=[];
       heroLoaded=d.hero||heroLoaded;
       if($('#heroImageFile'))$('#heroImageFile').value='';
-      setHeroPreview(d.hero?.image_url||null);
+      setHeroPreview(d.hero?.image_urls?.length?d.hero.image_urls:(d.hero?.image_url?[d.hero.image_url]:[]));
       if(stateEl)stateEl.textContent=`Tersimpan ${fmt(d.hero?.updated_at)}`;
       toast('Hero Visual berhasil diperbarui');
     }catch(e){
@@ -169,17 +175,24 @@
   $('#heroReload')?.addEventListener('click',()=>loadHeroContent().catch(err=>toast(err.message)));
   $('#heroResetImage')?.addEventListener('click',()=>saveHeroContent({removeImage:true}).catch(err=>toast(err.message)));
   $('#heroImageFile')?.addEventListener('change',async e=>{
-    const file=e.target.files?.[0];
-    if(!file)return;
+    const files=[...(e.target.files||[])];
+    if(!files.length)return;
     const stateEl=$('#heroSaveState');
     try{
-      if(stateEl)stateEl.textContent='Mengoptimalkan gambar…';
-      heroPendingImage=await optimizeHeroImage(file);
-      setHeroPreview(heroPendingImage);
-      if(stateEl)stateEl.textContent=`Gambar siap disimpan • ${Math.round(dataUrlBytes(heroPendingImage)/1024)} KB`;
+      if(files.length>5) throw new Error('Maksimal 5 gambar.');
+      if(stateEl)stateEl.textContent=`Mengoptimalkan ${files.length} gambar…`;
+      const optimized=[];
+      for(let i=0;i<files.length;i++){
+        if(stateEl)stateEl.textContent=`Mengoptimalkan gambar ${i+1}/${files.length}…`;
+        optimized.push(await optimizeHeroImage(files[i]));
+      }
+      heroPendingImages=optimized;
+      setHeroPreview(heroPendingImages);
+      const total=heroPendingImages.reduce((n,x)=>n+dataUrlBytes(x),0);
+      if(stateEl)stateEl.textContent=`${heroPendingImages.length} gambar siap disimpan • ${Math.round(total/1024)} KB`;
     }catch(err){
       e.target.value='';
-      heroPendingImage=null;
+      heroPendingImages=[];
       if(stateEl)stateEl.textContent=`Gagal: ${err.message}`;
       toast(err.message);
     }
