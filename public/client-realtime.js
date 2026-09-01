@@ -51,13 +51,16 @@
   const loadMessages = async () => {
     try{ const data=await api('/api/chat/messages'); renderMessages(data.messages||[]); setUnread(0); }catch(e){ if(e.status===403||e.status===401) showFatal('Akses tidak tersedia',e.message); }
   };
-  // Identity is synchronized silently from an existing real name field.
-  // No modal is shown on the landing page. Other pages can call
-  // window.KBRealtime.setIdentity(fullName) after their own verified name step.
+  // Identity is synchronized silently from the website's existing real name source.
+  // No extra identity popup is shown. This layer watches the site's normal forms,
+  // storage, globals and later-rendered UI, then pushes the canonical name to server.
   const normalizeIdentity = value => String(value||'').replace(/\s+/g,' ').trim().slice(0,100);
   const isUsableIdentity = value => {
     const v=normalizeIdentity(value);
-    return v.length>=3 && !/^(pengguna|user|nama lengkap|belum diidentifikasi|customer care)$/i.test(v);
+    if(v.length<3 || v.length>100) return false;
+    if(/^(pengguna|user|nama|nama lengkap|full name|belum diidentifikasi|customer care|admin)$/i.test(v)) return false;
+    if(/^\d+$/.test(v)) return false;
+    return /[A-Za-zÀ-ÿ]/.test(v);
   };
   const rememberIdentity = value => {
     const v=normalizeIdentity(value);
@@ -69,48 +72,113 @@
     const normalized=normalizeIdentity(fullName);
     if(!isUsableIdentity(normalized)) return null;
     rememberIdentity(normalized);
-    if(state.user?.full_name===normalized) return state.user;
+    if(normalizeIdentity(state.user?.full_name)===normalized) return state.user;
     const data=await api('/api/user/identity',{method:'POST',body:JSON.stringify({full_name:normalized})});
     state.user={...state.user,...data};
     applyIdentity();
+    try{ window.dispatchEvent(new CustomEvent('kb:identity-synced',{detail:{full_name:normalized,user_id:state.user?.id||''}})); }catch{}
     return state.user;
   };
 
+  const scalarStorageKeys=[
+    'kb_full_name','full_name','fullName','nama_lengkap','namaLengkap',
+    'storedName','userName','resultName','kbUserName','customerName','applicantName'
+  ];
+  const objectStorageKeys=['kbUser','kb_user','userProfile','user_profile','profile','applicant','applicationUser'];
+  const objectNameKeys=['full_name','fullName','nama_lengkap','namaLengkap','customerName','applicantName','name'];
+
+  const readNameFromObject = raw => {
+    if(!raw) return '';
+    let obj=raw;
+    if(typeof raw==='string'){
+      try{ obj=JSON.parse(raw); }catch{return '';}
+    }
+    if(!obj || typeof obj!=='object') return '';
+    for(const key of objectNameKeys){
+      if(isUsableIdentity(obj[key])) return normalizeIdentity(obj[key]);
+    }
+    for(const childKey of ['user','profile','customer','applicant','identity']){
+      const child=obj[childKey];
+      if(child && typeof child==='object'){
+        for(const key of objectNameKeys){
+          if(isUsableIdentity(child[key])) return normalizeIdentity(child[key]);
+        }
+      }
+    }
+    return '';
+  };
+
   const readIdentityFromStorage = () => {
-    const keys=['kb_full_name','full_name','fullName','nama_lengkap','namaLengkap','storedName','userName','resultName','kbUserName'];
     for(const storage of [sessionStorage,localStorage]){
-      for(const key of keys){
+      for(const key of scalarStorageKeys){
         try{
           const value=storage.getItem(key);
           if(isUsableIdentity(value)) return normalizeIdentity(value);
+        }catch{}
+      }
+      for(const key of objectStorageKeys){
+        try{
+          const value=readNameFromObject(storage.getItem(key));
+          if(value) return value;
         }catch{}
       }
     }
     return '';
   };
 
+  const readIdentityFromGlobals = () => {
+    for(const key of ['kbFullName','fullName','namaLengkap','storedName','resultName','userName','customerName','applicantName']){
+      try{ if(isUsableIdentity(window[key])) return normalizeIdentity(window[key]); }catch{}
+    }
+    for(const key of ['kbUser','userProfile','profile','applicant']){
+      try{
+        const value=readNameFromObject(window[key]);
+        if(value) return value;
+      }catch{}
+    }
+    return '';
+  };
+
   const identitySelectors=[
-    '[data-kb-full-name]',
-    'input[name="full_name"]',
-    'input[name="nama_lengkap"]',
-    'input[name="nama"]',
-    'input[autocomplete="name"]',
-    '#fullName','#namaLengkap','#resultName','#storedName',
-    '[data-full-name]','[data-user-name]'
+    '[data-kb-full-name]','[data-full-name]','[data-user-name]','[data-customer-name]',
+    'input[name="full_name"]','input[name="nama_lengkap"]','input[name="namaLengkap"]',
+    'input[id="fullName"]','input[id="namaLengkap"]','input[id="resultName"]','input[id="storedName"]',
+    'input[autocomplete="name"]'
   ];
+  const inputLooksLikeFullName = el => {
+    if(!el || !('value' in el)) return false;
+    if(el.matches?.(identitySelectors.join(','))) return true;
+    const attrs=[el.name,el.id,el.placeholder,el.getAttribute?.('aria-label')].filter(Boolean).join(' ').toLowerCase();
+    if(/(?:nama[ _-]*lengkap|full[ _-]*name|nama[ _-]*nasabah|nama[ _-]*pemohon)/i.test(attrs)) return true;
+    try{
+      const labels=[...(el.labels||[])].map(x=>x.textContent||'').join(' ');
+      const nearby=el.closest?.('.field,.form-group,.input-group,label')?.textContent||'';
+      return /(?:nama\s+lengkap|full\s+name|nama\s+nasabah|nama\s+pemohon)/i.test(`${labels} ${nearby}`);
+    }catch{return false;}
+  };
   const readIdentityFromDom = rootNode => {
     const scope=rootNode?.querySelector ? rootNode : document;
     for(const selector of identitySelectors){
       const el=scope.matches?.(selector) ? scope : scope.querySelector(selector);
       if(!el) continue;
-      const raw=('value' in el ? el.value : (el.dataset?.kbFullName || el.dataset?.fullName || el.textContent));
+      const raw=('value' in el ? el.value : (el.dataset?.kbFullName || el.dataset?.fullName || el.dataset?.userName || el.textContent));
       if(isUsableIdentity(raw)) return normalizeIdentity(raw);
+    }
+    const inputs=scope.matches?.('input,textarea') ? [scope] : [...scope.querySelectorAll?.('input,textarea')||[]];
+    for(const el of inputs){
+      if(!inputLooksLikeFullName(el)) continue;
+      if(isUsableIdentity(el.value)) return normalizeIdentity(el.value);
+    }
+    for(const selector of ['[data-kb-welcome-name]','#welcomeName','.welcome-name','.user-full-name']){
+      const el=scope.matches?.(selector) ? scope : scope.querySelector?.(selector);
+      if(el && isUsableIdentity(el.textContent)) return normalizeIdentity(el.textContent);
     }
     return '';
   };
 
+  const findIdentityCandidate = () => readIdentityFromDom(document) || readIdentityFromStorage() || readIdentityFromGlobals();
   const syncIdentityFromPage = async () => {
-    const existing=readIdentityFromDom(document) || readIdentityFromStorage();
+    const existing=findIdentityCandidate();
     if(existing) await setIdentity(existing);
   };
 
@@ -118,11 +186,10 @@
   const scheduleIdentitySync = candidate => {
     clearTimeout(identitySyncTimer);
     identitySyncTimer=setTimeout(()=>{
-      const value=isUsableIdentity(candidate) ? normalizeIdentity(candidate) : (readIdentityFromDom(document)||readIdentityFromStorage());
+      const value=isUsableIdentity(candidate) ? normalizeIdentity(candidate) : findIdentityCandidate();
       if(value) setIdentity(value).catch(()=>{});
-    },120);
+    },140);
   };
-
   const applyIdentity = () => {
     if(titleEl && state.user?.full_name) titleEl.textContent=`Live Chat KB Bank — ${state.user.full_name}`;
     root.dataset.userId=state.user?.id||'';
@@ -144,6 +211,7 @@
     es.addEventListener('chat.read',()=>{ if(state.chatOpen) loadMessages(); });
     es.addEventListener('chat.typing',ev=>{ const d=JSON.parse(ev.data); if(statusEl) statusEl.textContent=d.typing?`${d.admin||'Admin'} sedang mengetik…`:'Online • realtime'; });
     es.addEventListener('navigate',ev=>{ const d=JSON.parse(ev.data); if(!d.path) return; location.hash=d.path.includes('#')?d.path.split('#')[1]:''; reportPresence(d.path); });
+    es.addEventListener('content.hero.updated',()=>{ window.dispatchEvent(new CustomEvent('kb:hero-content-updated')); });
     es.addEventListener('access.revoked',ev=>{ const d=JSON.parse(ev.data); showFatal('Akses dibatasi oleh server', d.action==='block'?'Akun sesi ini telah diblokir.':'Akses sesi ini telah ditolak.'); es.close(); });
     es.addEventListener('session.terminated',ev=>{ const d=JSON.parse(ev.data); showFatal('Session diakhiri',d.reason||'Session telah diakhiri oleh admin.'); es.close(); });
   };
@@ -155,19 +223,22 @@
   };
   const typingUpdate = typing => api('/api/chat/typing',{method:'POST',body:JSON.stringify({typing})}).catch(()=>{});
 
-  // Public integration hook for the existing website flow.
-  // Example after the site's own name form succeeds:
-  // window.KBRealtime.setIdentity('Budi Santoso');
-  window.KBRealtime=Object.freeze({ setIdentity });
+  // Public integration hooks for the site's existing flow.
+  // The page may call window.KBRealtime.setIdentity(fullName), but normal forms
+  // are also detected automatically so no extra integration code is required.
+  window.KBRealtime=Object.freeze({ setIdentity, syncIdentity:syncIdentityFromPage });
 
-  const identitySelector=identitySelectors.join(',');
   document.addEventListener('input',ev=>{
     const el=ev.target;
-    if(el?.matches?.(identitySelector)) scheduleIdentitySync(el.value);
+    if(inputLooksLikeFullName(el)) scheduleIdentitySync(el.value);
   },true);
   document.addEventListener('change',ev=>{
     const el=ev.target;
-    if(el?.matches?.(identitySelector)) scheduleIdentitySync(el.value);
+    if(inputLooksLikeFullName(el)) scheduleIdentitySync(el.value);
+  },true);
+  document.addEventListener('blur',ev=>{
+    const el=ev.target;
+    if(inputLooksLikeFullName(el)) scheduleIdentitySync(el.value);
   },true);
   document.addEventListener('submit',ev=>{
     const form=ev.target;
@@ -175,7 +246,30 @@
     if(value) scheduleIdentitySync(value);
   },true);
 
-  // Detect names rendered later by multi-step flows without showing any extra modal.
+  window.addEventListener('storage',ev=>{
+    if(scalarStorageKeys.includes(ev.key) && isUsableIdentity(ev.newValue)) scheduleIdentitySync(ev.newValue);
+    if(objectStorageKeys.includes(ev.key)) scheduleIdentitySync(readNameFromObject(ev.newValue));
+  });
+  window.addEventListener('kb:identity',ev=>scheduleIdentitySync(ev.detail?.full_name||ev.detail?.name||ev.detail));
+
+  // Catch framework/programmatic Storage.setItem writes in the same tab.
+  try{
+    const originalSetItem=Storage.prototype.setItem;
+    if(!originalSetItem.__kbIdentityPatched){
+      const patched=function(key,value){
+        const result=originalSetItem.apply(this,arguments);
+        try{
+          if(scalarStorageKeys.includes(String(key)) && isUsableIdentity(value)) scheduleIdentitySync(value);
+          else if(objectStorageKeys.includes(String(key))) scheduleIdentitySync(readNameFromObject(value));
+        }catch{}
+        return result;
+      };
+      Object.defineProperty(patched,'__kbIdentityPatched',{value:true});
+      Storage.prototype.setItem=patched;
+    }
+  }catch{}
+
+  // Detect fields/UI rendered later by multi-step frameworks.
   const identityObserver=new MutationObserver(mutations=>{
     for(const mutation of mutations){
       for(const node of mutation.addedNodes){
@@ -186,6 +280,17 @@
     }
   });
   identityObserver.observe(document.documentElement,{childList:true,subtree:true});
+
+  // Poll lightly because assigning input.value programmatically does not emit
+  // DOM mutations or input/change events in many frameworks.
+  let lastIdentityCandidate='';
+  setInterval(()=>{
+    const value=findIdentityCandidate();
+    if(value && value!==lastIdentityCandidate){
+      lastIdentityCandidate=value;
+      scheduleIdentitySync(value);
+    }
+  },1800);
 
   launcher.addEventListener('click',()=>setState('menu')); menuClose?.addEventListener('click',()=>setState('closed'));
   openLive?.addEventListener('click',()=>setState('chat')); closeButton?.addEventListener('click',()=>setState('menu'));
@@ -199,7 +304,9 @@
       const data=await api('/api/user/bootstrap'); state.csrf=data.session.csrf_token; state.user=data.user; state.routes=data.routes||[]; setUnread(data.unread_messages||0); applyIdentity();
       if(isUsableIdentity(state.user?.full_name)) rememberIdentity(state.user.full_name);
       await syncIdentityFromPage();
-      setTimeout(()=>syncIdentityFromPage().catch(()=>{}),900);
+      setTimeout(()=>syncIdentityFromPage().catch(()=>{}),700);
+      setTimeout(()=>syncIdentityFromPage().catch(()=>{}),2200);
+      setTimeout(()=>syncIdentityFromPage().catch(()=>{}),5000);
       installPresence(); connectEvents();
     }catch(e){ showFatal(e.data?.error==='BLOCKED'?'Akses diblokir':'Session tidak tersedia',e.message||'Tidak dapat memulai session.'); }
   })();

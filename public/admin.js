@@ -3,18 +3,13 @@
   const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
   const state={csrf:'',admin:null,permissions:new Set(),users:[],routes:[],selectedChat:null,events:null,typingTimer:null,audio:localStorage.getItem('kb_admin_audio')==='1'};
   const views=[
-    ['dashboard','Dashboard','monitor'],['users','Users','monitor'],['online','Online Users','monitor'],['chat','Live Chat','chat'],['sessions','Active Sessions','monitor'],['blocked','Blocked Users','monitor'],['activity','Activity','monitor'],['audit','Audit Log','audit'],['admins','Admin Management','manage_admins'],['settings','Settings',null]
+    ['dashboard','Dashboard','monitor'],['users','Users','monitor'],['online','Online Users','monitor'],['chat','Live Chat','chat'],['sessions','Active Sessions','monitor'],['blocked','Blocked Users','monitor'],['activity','Activity','monitor'],['audit','Audit Log','audit'],['hero','Hero Visual','content'],['admins','Admin Management','manage_admins'],['settings','Settings',null]
   ];
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=iso=>iso?new Intl.DateTimeFormat('id-ID',{dateStyle:'short',timeStyle:'medium'}).format(new Date(iso)):'—';
-  const api=async(url,opts={})=>{const headers={'Content-Type':'application/json',...(opts.headers||{})};if(state.csrf&&opts.method&&opts.method!=='GET')headers['X-CSRF-Token']=state.csrf;const r=await fetch(url,{credentials:'same-origin',...opts,headers});let d={};try{d=await r.json()}catch{}if(!r.ok){if(r.status===401&&d.error==='UNAUTHENTICATED'&&url!=='/api/admin/login')showLoginForExpiredSession();const e=new Error(d.message||d.error||`HTTP ${r.status}`);e.status=r.status;e.data=d;throw e}return d};
+  const api=async(url,opts={})=>{const headers={'Content-Type':'application/json',...(opts.headers||{})};if(state.csrf&&opts.method&&opts.method!=='GET')headers['X-CSRF-Token']=state.csrf;const r=await fetch(url,{credentials:'same-origin',...opts,headers});let d={};try{d=await r.json()}catch{}if(!r.ok){const e=new Error(d.message||d.error||`HTTP ${r.status}`);e.status=r.status;e.data=d;throw e}return d};
   const can=p=>!p||state.permissions.has(p);
   const toast=(msg)=>{const n=document.createElement('div');n.className='toast';n.textContent=msg;$('#toasts').appendChild(n);setTimeout(()=>n.remove(),4200)};
-  function showLoginForExpiredSession(){
-    state.events?.close(); state.events=null; state.csrf=''; state.admin=null; state.permissions=new Set();
-    $('#app')?.classList.add('hidden'); $('#loginView')?.classList.remove('hidden');
-    const err=$('#loginError'); if(err)err.textContent='Sesi admin berakhir. Silakan masuk kembali.';
-  }
   const beep=()=>{if(!state.audio)return;try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.frequency.value=720;g.gain.value=.04;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.12)}catch{}};
   const statusBadge=u=>`<span class="status ${u.status==='ACTIVE'?'s-active':u.status==='BLOCKED'?'s-blocked':'s-restricted'}">${esc(u.status)}</span>`;
   const navHtml=()=>views.filter(([, ,p])=>can(p)).map(([id,label])=>`<button data-nav="${id}">${esc(label)}${id==='chat'?'<span class="badge chat-badge">0</span>':''}</button>`).join('');
@@ -35,7 +30,7 @@
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMobileMore();});
     const first=allowed[0]; showView(first?.[0]||'settings');
   }
-  function showView(id){$$('.view').forEach(v=>v.classList.toggle('active',v.dataset.view===id));$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===id));const meta=views.find(v=>v[0]===id);$('#pageTitle').textContent=meta?.[1]||id;closeMobileMore();window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});if(id==='chat')loadChatUsers();if(id==='audit')loadAudit();if(id==='activity')loadActivity();if(id==='admins')loadAdmins();}
+  function showView(id){$$('.view').forEach(v=>v.classList.toggle('active',v.dataset.view===id));$$('[data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===id));const meta=views.find(v=>v[0]===id);$('#pageTitle').textContent=meta?.[1]||id;closeMobileMore();window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});if(id==='chat')loadChatUsers();if(id==='audit')loadAudit();if(id==='activity')loadActivity();if(id==='hero')loadHeroContent();if(id==='admins')loadAdmins();}
   function renderStats(s){const labels=[['online_users','User Online'],['active_sessions','Active Sessions'],['active_chats','Chat Aktif'],['unread_messages','Pesan Belum Dibaca'],['new_users','User Baru'],['blocked_users','User Diblokir']];$('#stats').innerHTML=labels.map(([k,l])=>`<div class="stat"><span>${l}</span><strong>${Number(s[k]||0)}</strong></div>`).join('');}
   function renderUsers(){
     $('#dashboardUsers').innerHTML=state.users.map(u=>`<tr><td data-label="User"><strong>${esc(u.full_name)}</strong><br><small>${esc(u.id)}</small></td><td data-label="Online" class="${u.online?'online':'offline'}">${u.online?'Online':'Offline'}</td><td data-label="Halaman">${esc(u.current_page)}</td><td data-label="Progress"><div class="progress"><i style="width:${Number(u.progress)||0}%"></i></div></td><td data-label="Status">${statusBadge(u)}</td><td data-label="Session">${esc(u.session_id||'—')}</td></tr>`).join('');
@@ -61,22 +56,134 @@
   async function loadAudit(){if(!can('audit'))return;const d=await api('/api/admin/audit');$('#auditLog').innerHTML=(d.audit||[]).map(x=>`<div class="log-item"><time>${fmt(x.created_at)}</time><div><strong>${esc(x.action)}</strong> — ${esc(x.admin_name)} → ${esc(x.target_name||x.target_user_id||'system')}<br><small>Alasan: ${esc(x.reason||'—')}</small></div><span>${esc(x.new_state?.status||'')}</span></div>`).join('')||'<div class="log-item">Belum ada audit log.</div>'}
   async function loadActivity(){if(!can('monitor'))return;const d=await api('/api/admin/activity');$('#activityLog').innerHTML=(d.activity||[]).map(x=>`<div class="log-item"><time>${fmt(x.created_at)}</time><div><strong>${esc(x.full_name)}</strong> — ${esc(x.type)}<br><small>${esc(x.detail||'')}</small></div><span>${esc(x.session_id||'')}</span></div>`).join('')||'<div class="log-item">Belum ada activity.</div>'}
   async function loadAdmins(){if(!can('manage_admins'))return;const d=await api('/api/admin/admins');$('#adminCards').innerHTML=(d.admins||[]).map(a=>`<div class="list-card"><strong>${esc(a.full_name)}</strong><p>${esc(a.email)}<br>${esc(a.role)}</p></div>`).join('')}
-  function connectEvents(){
-    state.events?.close();
-    const es=new EventSource('/events/admin'); state.events=es;
-    es.addEventListener('chat.message',ev=>{const m=JSON.parse(ev.data);if(m.sender_type==='USER'){toast(`Pesan baru dari ${m.sender_name||'user'}`);beep()}if(state.selectedChat===m.user_id)selectChat(m.user_id).catch(()=>{});refreshAll().catch(()=>{})});
-    es.addEventListener('chat.typing',ev=>{const d=JSON.parse(ev.data);if(state.selectedChat===d.user_id){$('#typingText').textContent=d.typing?'User sedang mengetik…':'';clearTimeout(state.typingTimer);state.typingTimer=setTimeout(()=>$('#typingText').textContent='',1800)}});
-    es.addEventListener('user.created',()=>{toast('User baru masuk');beep();refreshAll().catch(()=>{})});
-    es.addEventListener('session.started',()=>{refreshAll().catch(()=>{})});
-    ['presence.updated','user.updated'].forEach(e=>es.addEventListener(e,()=>refreshAll().catch(()=>{})));
-    es.addEventListener('error',()=>{setTimeout(()=>api('/api/admin/me').catch(()=>{}),500)});
+  let heroPendingImage=null;
+  let heroLoaded=null;
+
+  function heroFormPayload(extra={}) {
+    return {
+      chip_one_title:$('#heroChipOneTitle')?.value.trim()||'',
+      chip_one_subtitle:$('#heroChipOneSubtitle')?.value.trim()||'',
+      chip_two_title:$('#heroChipTwoTitle')?.value.trim()||'',
+      chip_two_subtitle:$('#heroChipTwoSubtitle')?.value.trim()||'',
+      caption:$('#heroCaption')?.value.trim()||'',
+      image_alt:$('#heroImageAlt')?.value.trim()||'',
+      ...extra
+    };
   }
-  async function boot(){try{const d=await api('/api/admin/me');state.admin=d.admin;state.csrf=d.csrf_token;state.permissions=new Set(d.permissions||[]);$('#loginView').classList.add('hidden');$('#app').classList.remove('hidden');$('#adminName').textContent=state.admin.full_name;$('#adminRole').textContent=state.admin.role;setupNav();$('#audioToggle').checked=state.audio;await refreshAll();connectEvents()}catch(err){if(err?.status!==401){const el=$('#loginError');if(el)el.textContent='Admin Panel belum dapat terhubung ke server.';}}}
+
+  function setHeroPreview(src) {
+    const img=$('#heroAdminPreview'), empty=$('#heroAdminEmpty');
+    if(!img||!empty)return;
+    if(src){
+      img.src=src;
+      img.hidden=false;
+      empty.hidden=true;
+    }else{
+      img.removeAttribute('src');
+      img.hidden=true;
+      empty.hidden=false;
+    }
+  }
+
+  async function loadHeroContent(){
+    if(!can('content'))return;
+    const stateEl=$('#heroSaveState');
+    if(stateEl)stateEl.textContent='Memuat konfigurasi…';
+    try{
+      const d=await api('/api/admin/content/hero');
+      const h=d.hero||{};
+      heroLoaded=h;
+      $('#heroChipOneTitle').value=h.chip_one_title||'';
+      $('#heroChipOneSubtitle').value=h.chip_one_subtitle||'';
+      $('#heroChipTwoTitle').value=h.chip_two_title||'';
+      $('#heroChipTwoSubtitle').value=h.chip_two_subtitle||'';
+      $('#heroCaption').value=h.caption||'';
+      $('#heroImageAlt').value=h.image_alt||'';
+      heroPendingImage=null;
+      if($('#heroImageFile'))$('#heroImageFile').value='';
+      setHeroPreview(h.image_url||null);
+      if(stateEl)stateEl.textContent=h.updated_at?`Terakhir disimpan ${fmt(h.updated_at)}`:'Menggunakan konfigurasi bawaan.';
+    }catch(e){
+      if(stateEl)stateEl.textContent=`Gagal memuat: ${e.message}`;
+    }
+  }
+
+  const dataUrlBytes = dataUrl => {
+    const base64=String(dataUrl||'').split(',')[1]||'';
+    const padding=(base64.match(/=*$/)||[''])[0].length;
+    return Math.max(0,Math.floor(base64.length*3/4)-padding);
+  };
+
+  async function optimizeHeroImage(file){
+    if(!file || !/^image\/(png|jpeg|webp)$/.test(file.type)) throw new Error('Pilih PNG, JPG, atau WebP.');
+    if(file.size>10*1024*1024) throw new Error('File sumber maksimal 10 MB.');
+    const bitmap=await createImageBitmap(file);
+    const maxSide=1400;
+    const scale=Math.min(1,maxSide/Math.max(bitmap.width,bitmap.height));
+    const width=Math.max(1,Math.round(bitmap.width*scale));
+    const height=Math.max(1,Math.round(bitmap.height*scale));
+    const canvas=document.createElement('canvas');
+    canvas.width=width;canvas.height=height;
+    const ctx=canvas.getContext('2d',{alpha:true});
+    ctx.drawImage(bitmap,0,0,width,height);
+    bitmap.close?.();
+    for(const quality of [.88,.80,.72,.64,.56]){
+      const data=canvas.toDataURL('image/webp',quality);
+      if(dataUrlBytes(data)<=560*1024) return data;
+    }
+    throw new Error('Gambar masih terlalu besar setelah optimasi. Gunakan gambar yang lebih kecil.');
+  }
+
+  async function saveHeroContent({removeImage=false}={}){
+    const stateEl=$('#heroSaveState'), save=$('#heroSave');
+    if(save)save.disabled=true;
+    if(stateEl)stateEl.textContent='Menyimpan…';
+    try{
+      const body=heroFormPayload({
+        ...(heroPendingImage?{image_data:heroPendingImage}:{}),
+        ...(removeImage?{remove_image:true}:{})
+      });
+      const d=await api('/api/admin/content/hero',{method:'PUT',body:JSON.stringify(body)});
+      heroPendingImage=null;
+      heroLoaded=d.hero||heroLoaded;
+      if($('#heroImageFile'))$('#heroImageFile').value='';
+      setHeroPreview(d.hero?.image_url||null);
+      if(stateEl)stateEl.textContent=`Tersimpan ${fmt(d.hero?.updated_at)}`;
+      toast('Hero Visual berhasil diperbarui');
+    }catch(e){
+      if(stateEl)stateEl.textContent=`Gagal: ${e.message}`;
+      toast(`Gagal menyimpan Hero: ${e.message}`);
+    }finally{
+      if(save)save.disabled=false;
+    }
+  }
+
+  function connectEvents(){state.events?.close();const es=new EventSource('/events/admin');state.events=es;es.addEventListener('chat.message',ev=>{const m=JSON.parse(ev.data);if(m.sender_type==='USER'){toast(`Pesan baru dari ${m.sender_name}`);beep()}if(state.selectedChat===m.user_id)selectChat(m.user_id).catch(()=>{});refreshAll().catch(()=>{})});es.addEventListener('chat.typing',ev=>{const d=JSON.parse(ev.data);if(state.selectedChat===d.user_id){$('#typingText').textContent=d.typing?'User sedang mengetik…':'';clearTimeout(state.typingTimer);state.typingTimer=setTimeout(()=>$('#typingText').textContent='',1800)}});['presence.updated','user.updated','user.created','session.started'].forEach(e=>es.addEventListener(e,()=>refreshAll().catch(()=>{})));es.addEventListener('content.hero.updated',()=>{if($('.view[data-view="hero"]')?.classList.contains('active'))loadHeroContent().catch(()=>{});})}
+  async function boot(){try{const d=await api('/api/admin/me');state.admin=d.admin;state.csrf=d.csrf_token;state.permissions=new Set(d.permissions||[]);$('#loginView').classList.add('hidden');$('#app').classList.remove('hidden');$('#adminName').textContent=state.admin.full_name;$('#adminRole').textContent=state.admin.role;setupNav();$('#audioToggle').checked=state.audio;await refreshAll();connectEvents()}catch{}}
   $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();$('#loginError').textContent='';const body=Object.fromEntries(new FormData(e.currentTarget).entries());try{await api('/api/admin/login',{method:'POST',body:JSON.stringify(body)});await boot()}catch(err){$('#loginError').textContent=err.message}});
   $('#chatForm').addEventListener('submit',e=>{e.preventDefault();sendChat().catch(err=>toast(err.message))});
   $('#chatInput').addEventListener('input',()=>{if(!state.selectedChat)return;api(`/api/admin/users/${encodeURIComponent(state.selectedChat)}/typing`,{method:'POST',body:JSON.stringify({typing:true})}).catch(()=>{});clearTimeout(state.typingTimer);state.typingTimer=setTimeout(()=>api(`/api/admin/users/${encodeURIComponent(state.selectedChat)}/typing`,{method:'POST',body:JSON.stringify({typing:false})}).catch(()=>{}),750)});
   $('#audioToggle').addEventListener('change',e=>{state.audio=e.target.checked;localStorage.setItem('kb_admin_audio',state.audio?'1':'0');toast(`Audio notification ${state.audio?'aktif':'nonaktif'}`)});
   $('#adminCreate').addEventListener('submit',async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.currentTarget).entries());try{await api('/api/admin/admins',{method:'POST',body:JSON.stringify(body)});e.currentTarget.reset();toast('Admin ditambahkan');loadAdmins()}catch(err){toast(`Gagal: ${err.message}`)}});
+  $('#heroContentForm')?.addEventListener('submit',e=>{e.preventDefault();saveHeroContent().catch(err=>toast(err.message))});
+  $('#heroReload')?.addEventListener('click',()=>loadHeroContent().catch(err=>toast(err.message)));
+  $('#heroResetImage')?.addEventListener('click',()=>saveHeroContent({removeImage:true}).catch(err=>toast(err.message)));
+  $('#heroImageFile')?.addEventListener('change',async e=>{
+    const file=e.target.files?.[0];
+    if(!file)return;
+    const stateEl=$('#heroSaveState');
+    try{
+      if(stateEl)stateEl.textContent='Mengoptimalkan gambar…';
+      heroPendingImage=await optimizeHeroImage(file);
+      setHeroPreview(heroPendingImage);
+      if(stateEl)stateEl.textContent=`Gambar siap disimpan • ${Math.round(dataUrlBytes(heroPendingImage)/1024)} KB`;
+    }catch(err){
+      e.target.value='';
+      heroPendingImage=null;
+      if(stateEl)stateEl.textContent=`Gagal: ${err.message}`;
+      toast(err.message);
+    }
+  });
   $$('[data-refresh]').forEach(b=>b.onclick=()=>refreshAll().catch(e=>toast(e.message)));
   boot();
 })();

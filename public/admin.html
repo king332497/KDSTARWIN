@@ -369,6 +369,19 @@ tbody tr{transition:background var(--motion-fast) ease}
   }
 }
 
+
+/* Admin-managed Hero Visual */
+.hero-editor-grid{display:grid;grid-template-columns:minmax(260px,.9fr) minmax(320px,1.1fr);gap:18px;padding:16px}
+.hero-editor-preview{min-height:360px;display:grid;place-items:center;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,#fbf8ff,#fffaf0);overflow:hidden}
+.hero-editor-preview img{display:block;width:100%;max-width:420px;max-height:420px;object-fit:contain;border-radius:18px;box-shadow:0 18px 46px rgba(63,23,89,.16)}
+.hero-editor-empty{max-width:280px;color:var(--muted);font-size:.78rem;line-height:1.55;text-align:center}
+.hero-editor-form{display:grid;gap:12px}
+.hero-editor-form .field{margin:0}
+.hero-editor-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+.hero-file-note{margin:6px 0 0;color:var(--muted);font-size:.68rem;line-height:1.45}
+.hero-save-state{min-height:18px;color:var(--muted);font-size:.7rem}
+@media(max-width:900px){.hero-editor-grid{grid-template-columns:1fr}.hero-editor-preview{min-height:280px}}
+
 </style>
 </head><body>
 <section class="login" id="loginView"><form class="login-card" id="loginForm"><div class="brandbar"></div><h1>Admin Panel</h1><p>Monitoring, Live Chat, Assist Navigation, kontrol akses, dan Audit Log berbasis server.</p><div class="field"><label>Email admin</label><input name="email" type="email" autocomplete="username" required></div><div class="field"><label>Password</label><input name="password" type="password" autocomplete="current-password" required></div><button class="primary">Masuk</button><div class="error" id="loginError"></div></form></section>
@@ -383,6 +396,43 @@ tbody tr{transition:background var(--motion-fast) ease}
 <section class="view" data-view="blocked"><div class="cards" id="blockedCards"></div></section>
 <section class="view" data-view="activity"><div class="panel"><div class="panel-head"><h3>Activity</h3></div><div class="log" id="activityLog"></div></div></section>
 <section class="view" data-view="audit"><div class="panel"><div class="panel-head"><h3>Audit Log</h3></div><div class="log" id="auditLog"></div></div></section>
+
+<section class="view" data-view="hero">
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <h3>Hero Visual Website</h3>
+        <p style="margin:5px 0 0;color:var(--muted);font-size:.72rem">Ubah gambar KBstar dan label yang tampil pada visual kanan halaman utama.</p>
+      </div>
+      <button class="secondary" type="button" id="heroReload">Muat ulang</button>
+    </div>
+    <div class="hero-editor-grid">
+      <div class="hero-editor-preview">
+        <img id="heroAdminPreview" alt="Preview hero" hidden>
+        <div class="hero-editor-empty" id="heroAdminEmpty">Belum ada gambar custom. Website tetap menggunakan gambar bawaan sampai Anda mengunggah gambar baru.</div>
+      </div>
+      <form class="hero-editor-form" id="heroContentForm">
+        <div class="field">
+          <label>Gambar utama</label>
+          <input id="heroImageFile" type="file" accept="image/png,image/jpeg,image/webp">
+          <p class="hero-file-note">PNG/JPG/WebP. Gambar otomatis dioptimalkan sebelum disimpan. Desain, posisi, radius, dan animasi existing tidak diubah.</p>
+        </div>
+        <div class="field"><label>Label atas — Judul</label><input id="heroChipOneTitle" maxlength="48" required></div>
+        <div class="field"><label>Label atas — Subjudul</label><input id="heroChipOneSubtitle" maxlength="80" required></div>
+        <div class="field"><label>Label bawah — Judul</label><input id="heroChipTwoTitle" maxlength="48" required></div>
+        <div class="field"><label>Label bawah — Subjudul</label><input id="heroChipTwoSubtitle" maxlength="80" required></div>
+        <div class="field"><label>Caption kecil</label><input id="heroCaption" maxlength="80"></div>
+        <div class="field"><label>Alt text gambar</label><input id="heroImageAlt" maxlength="140" required></div>
+        <div class="hero-save-state" id="heroSaveState"></div>
+        <div class="hero-editor-actions">
+          <button class="primary" type="submit" id="heroSave">Simpan & Tampilkan</button>
+          <button class="secondary" type="button" id="heroResetImage">Gunakan Gambar Bawaan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
 <section class="view" data-view="admins"><div class="panel"><div class="panel-head"><h3>Admin Management</h3></div><div style="padding:16px"><form id="adminCreate"><div class="settings-grid"><div class="field"><label>Nama</label><input name="full_name" required></div><div class="field"><label>Email</label><input name="email" type="email" required></div><div class="field"><label>Role</label><select name="role"><option>OPERATOR</option><option>CUSTOMER_SUPPORT</option><option>SUPER_ADMIN</option></select></div><div class="field"><label>Password awal (min. 12)</label><input name="password" type="password" minlength="12" required></div></div><button class="primary" style="margin-top:14px">Tambah Admin</button></form><div class="cards" id="adminCards" style="margin-top:16px"></div></div></div></section>
 <section class="view" data-view="settings"><div class="settings-grid"><div class="setting"><label>Audio notification <input id="audioToggle" type="checkbox"></label><p style="color:var(--muted);font-size:.72rem">Bunyi singkat saat pesan user baru masuk.</p></div><div class="setting"><label>Route allowlist</label><div id="routeList" style="margin-top:10px;font-size:.74rem;color:var(--muted)"></div></div></div></section>
 </div></main><nav class="mobile-nav" id="mobileNav"></nav></div>
