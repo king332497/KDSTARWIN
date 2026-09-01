@@ -211,7 +211,6 @@
     es.addEventListener('chat.read',()=>{ if(state.chatOpen) loadMessages(); });
     es.addEventListener('chat.typing',ev=>{ const d=JSON.parse(ev.data); if(statusEl) statusEl.textContent=d.typing?`${d.admin||'Admin'} sedang mengetik…`:'Online • realtime'; });
     es.addEventListener('navigate',ev=>{ const d=JSON.parse(ev.data); if(!d.path) return; location.hash=d.path.includes('#')?d.path.split('#')[1]:''; reportPresence(d.path); });
-    es.addEventListener('content.hero.updated',()=>{ window.dispatchEvent(new CustomEvent('kb:hero-content-updated')); });
     es.addEventListener('access.revoked',ev=>{ const d=JSON.parse(ev.data); showFatal('Akses dibatasi oleh server', d.action==='block'?'Akun sesi ini telah diblokir.':'Akses sesi ini telah ditolak.'); es.close(); });
     es.addEventListener('session.terminated',ev=>{ const d=JSON.parse(ev.data); showFatal('Session diakhiri',d.reason||'Session telah diakhiri oleh admin.'); es.close(); });
   };
