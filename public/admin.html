@@ -241,6 +241,134 @@
   }
 }
 
+
+/* =========================================================
+   PREMIUM MOTION LAYER — subtle, performant, accessible
+   ========================================================= */
+:root{
+  --motion-fast:160ms;
+  --motion-base:260ms;
+  --motion-slow:460ms;
+  --motion-ease:cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes kbFadeUp{
+  from{opacity:0;transform:translate3d(0,10px,0)}
+  to{opacity:1;transform:translate3d(0,0,0)}
+}
+@keyframes kbScaleIn{
+  from{opacity:0;transform:scale(.985) translateY(8px)}
+  to{opacity:1;transform:scale(1) translateY(0)}
+}
+@keyframes kbPulseOnline{
+  0%,100%{box-shadow:0 0 0 0 rgba(6,118,71,.20)}
+  50%{box-shadow:0 0 0 6px rgba(6,118,71,0)}
+}
+@keyframes kbProgressSweep{
+  0%{transform:translateX(-120%)}
+  100%{transform:translateX(220%)}
+}
+@keyframes kbNavGlow{
+  0%,100%{box-shadow:0 0 0 rgba(255,203,5,0)}
+  50%{box-shadow:0 7px 22px rgba(255,203,5,.16)}
+}
+
+.view.active{
+  animation:kbFadeUp var(--motion-base) var(--motion-ease) both;
+}
+.top{
+  transition:background var(--motion-base) var(--motion-ease),box-shadow var(--motion-base) var(--motion-ease);
+}
+.stat{
+  transition:transform var(--motion-base) var(--motion-ease),box-shadow var(--motion-base) var(--motion-ease),border-color var(--motion-base) var(--motion-ease);
+  animation:kbFadeUp var(--motion-slow) var(--motion-ease) both;
+}
+.stat:nth-child(1){animation-delay:30ms}
+.stat:nth-child(2){animation-delay:70ms}
+.stat:nth-child(3){animation-delay:110ms}
+.stat:nth-child(4){animation-delay:150ms}
+.stat:nth-child(5){animation-delay:190ms}
+.stat:nth-child(6){animation-delay:230ms}
+
+.panel,.list-card,.setting{
+  transition:transform var(--motion-base) var(--motion-ease),box-shadow var(--motion-base) var(--motion-ease),border-color var(--motion-base) var(--motion-ease);
+}
+.panel{animation:kbFadeUp var(--motion-slow) var(--motion-ease) 90ms both}
+.cards .list-card{animation:kbFadeUp var(--motion-slow) var(--motion-ease) both}
+.cards .list-card:nth-child(2){animation-delay:55ms}
+.cards .list-card:nth-child(3){animation-delay:100ms}
+.cards .list-card:nth-child(4){animation-delay:145ms}
+
+@media (hover:hover){
+  .stat:hover,.list-card:hover,.setting:hover{
+    transform:translateY(-3px);
+    box-shadow:0 16px 36px rgba(24,24,27,.08);
+    border-color:rgba(24,24,27,.12);
+  }
+}
+
+.nav button,.mobile-nav button,.mobile-more-list button{
+  transition:transform var(--motion-fast) var(--motion-ease),background var(--motion-base) var(--motion-ease),color var(--motion-base) var(--motion-ease),box-shadow var(--motion-base) var(--motion-ease);
+}
+.nav button:active,.mobile-nav button:active,.mobile-more-list button:active{transform:scale(.97)}
+.nav button.active,.mobile-nav button.active{animation:kbNavGlow 2.6s ease-in-out infinite}
+
+.primary,.secondary,.danger,.ghost,.chat-form button{
+  transition:transform var(--motion-fast) var(--motion-ease),box-shadow var(--motion-base) var(--motion-ease),filter var(--motion-base) var(--motion-ease);
+}
+.primary:active,.secondary:active,.danger:active,.ghost:active,.chat-form button:active{transform:scale(.97)}
+@media (hover:hover){
+  .primary:hover{filter:brightness(.985);box-shadow:0 8px 22px rgba(255,203,5,.22)}
+  .secondary:hover,.ghost:hover{box-shadow:0 7px 18px rgba(24,24,27,.06)}
+}
+
+tbody tr{transition:background var(--motion-fast) ease}
+@media (hover:hover){tbody tr:hover{background:#fffdf2}}
+
+.status.s-active:before{animation:kbPulseOnline 1.9s ease-out infinite}
+.online{display:inline-flex;align-items:center;gap:6px}
+.online:before{
+  content:"";
+  width:7px;height:7px;border-radius:50%;
+  background:currentColor;
+  animation:kbPulseOnline 1.9s ease-out infinite;
+}
+
+.progress{position:relative}
+.progress::after{
+  content:"";
+  position:absolute;inset:0;width:35%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.75),transparent);
+  animation:kbProgressSweep 2.8s ease-in-out infinite;
+  pointer-events:none;
+}
+
+.chat-user{transition:background var(--motion-fast) ease,transform var(--motion-fast) var(--motion-ease)}
+.chat-user:active{transform:scale(.985)}
+.msg{animation:kbFadeUp 220ms var(--motion-ease) both}
+
+.toast{animation:kbScaleIn 280ms var(--motion-ease) both}
+.modal-card{animation:kbScaleIn 300ms var(--motion-ease) both}
+.mobile-more-card{animation:kbScaleIn 260ms var(--motion-ease) both}
+.login-card{animation:kbScaleIn 520ms var(--motion-ease) both}
+
+.brandbar{position:relative;overflow:hidden}
+.brandbar::after{
+  content:"";
+  position:absolute;top:0;bottom:0;width:45%;left:-55%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.85),transparent);
+  animation:kbProgressSweep 3.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+
 </style>
 </head><body>
 <section class="login" id="loginView"><form class="login-card" id="loginForm"><div class="brandbar"></div><h1>Admin Panel</h1><p>Monitoring, Live Chat, Assist Navigation, kontrol akses, dan Audit Log berbasis server.</p><div class="field"><label>Email admin</label><input name="email" type="email" autocomplete="username" required></div><div class="field"><label>Password</label><input name="password" type="password" autocomplete="current-password" required></div><button class="primary">Masuk</button><div class="error" id="loginError"></div></form></section>
@@ -260,27 +388,14 @@
 </div></main><nav class="mobile-nav" id="mobileNav"></nav></div>
 
 <div class="mobile-more-sheet" id="mobileMoreSheet" aria-hidden="true">
-  <div class="mobile-more-card"
-       role="dialog"
-       aria-modal="true"
-       aria-labelledby="mobileMoreTitle">
-
+  <div class="mobile-more-card" role="dialog" aria-modal="true" aria-labelledby="mobileMoreTitle">
     <div class="mobile-more-head">
       <strong id="mobileMoreTitle">Menu Admin</strong>
-      <button type="button"
-              id="mobileMoreClose"
-              aria-label="Tutup menu">
-        Tutup
-      </button>
+      <button type="button" id="mobileMoreClose" aria-label="Tutup menu">Tutup</button>
     </div>
-
     <div class="mobile-more-list" id="mobileMoreList"></div>
   </div>
 </div>
 
-<div class="toast-wrap" id="toasts"></div>
-<div id="modalRoot"></div>
-
-<script src="/admin.js" defer></script>
-</body>
-</html>
+<div class="toast-wrap" id="toasts"></div><div id="modalRoot"></div>
+<script src="/admin.js" defer></script></body></html>
