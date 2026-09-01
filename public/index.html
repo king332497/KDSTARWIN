@@ -4148,6 +4148,464 @@
     }
   </style>
 
+
+  <style id="kbLatestInfoSectionStyles">
+    /* =========================================================
+       KB BANK — SIARAN PERS / INFO TERBARU
+       Scoped replacement for the previous #proses section only.
+       ========================================================= */
+    .kb-latest-section {
+      position: relative;
+      z-index: 10;
+      padding: 46px 0 54px;
+      background:
+        linear-gradient(180deg, rgba(255,250,228,.58) 0, rgba(255,255,255,0) 92px),
+        #fff;
+      color: #171719;
+    }
+
+    .kb-latest-layout {
+      display: grid;
+      grid-template-columns: minmax(330px, .88fr) minmax(0, 1.82fr);
+      gap: clamp(26px, 3.2vw, 54px);
+      align-items: start;
+    }
+
+    .kb-latest-heading {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin: 0 0 24px;
+      color: #8a632d;
+    }
+
+    .kb-latest-heading-icon {
+      width: 23px;
+      height: 23px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+    }
+
+    .kb-latest-heading-icon svg {
+      width: 21px;
+      height: 21px;
+      display: block;
+    }
+
+    .kb-latest-heading h2 {
+      margin: 0;
+      font-size: clamp(1rem, 1.05vw, 1.12rem);
+      line-height: 1.2;
+      font-weight: 720;
+      letter-spacing: -.015em;
+      color: inherit;
+    }
+
+    .kb-press-column {
+      min-width: 0;
+      padding-right: clamp(0px, 1vw, 10px);
+    }
+
+    .kb-press-list {
+      border-top: 1px solid transparent;
+    }
+
+    .kb-press-item {
+      min-height: 104px;
+      padding: 13px 0 23px;
+      border-bottom: 1px solid #e7e4e1;
+    }
+
+    .kb-press-item time {
+      display: block;
+      margin-bottom: 10px;
+      color: #7b7b81;
+      font-size: .74rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .kb-press-item a {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      color: #432c24;
+      text-decoration: none;
+      font-size: clamp(.88rem, .92vw, 1rem);
+      font-weight: 560;
+      line-height: 1.55;
+      letter-spacing: -.012em;
+      transition: color .18s ease;
+    }
+
+    .kb-press-item a:hover {
+      color: #c77a00;
+    }
+
+    .kb-section-link-row {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 27px;
+    }
+
+    .kb-text-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      color: #ee9900;
+      text-decoration: none;
+      font-size: .82rem;
+      font-weight: 560;
+      line-height: 1;
+      white-space: nowrap;
+      transition: color .18s ease, gap .18s ease;
+    }
+
+    .kb-text-link svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .kb-text-link:hover {
+      color: #bd7600;
+      gap: 7px;
+    }
+
+    .kb-market-column {
+      min-width: 0;
+    }
+
+    .kb-market-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    .kb-market-card {
+      min-width: 0;
+      min-height: 458px;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 18px 17px;
+      border: 1px solid #e9e6e3;
+      border-radius: 13px;
+      background: #fff;
+      box-shadow:
+        0 2px 4px rgba(24,18,13,.025),
+        0 7px 18px rgba(24,18,13,.045);
+    }
+
+    .kb-card-title {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-bottom: 20px;
+      color: #60483e;
+    }
+
+    .kb-card-title h3 {
+      margin: 0;
+      color: inherit;
+      font-size: clamp(1.28rem, 1.55vw, 1.65rem);
+      font-weight: 480;
+      line-height: 1;
+      letter-spacing: -.025em;
+    }
+
+    .kb-card-icon {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 4px;
+      background: #f2efee;
+      color: #776b67;
+    }
+
+    .kb-card-icon svg {
+      width: 21px;
+      height: 21px;
+    }
+
+    .kb-rate-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      margin-bottom: 14px;
+      padding: 8px;
+      border-radius: 5px;
+      background: #f7f7f7;
+    }
+
+    .kb-rate-tab {
+      min-height: 40px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: #8a8584;
+      font: inherit;
+      font-size: .84rem;
+      font-weight: 620;
+      cursor: default;
+    }
+
+    .kb-rate-tab.is-active {
+      background: linear-gradient(180deg, #ffbf22 0%, #ffad00 100%);
+      color: #1c1600;
+      box-shadow: 0 4px 10px rgba(232,155,0,.23);
+    }
+
+    .kb-rate-tab:disabled {
+      opacity: 1;
+    }
+
+    .kb-rate-table-wrap {
+      min-width: 0;
+      overflow-x: auto;
+    }
+
+    .kb-rate-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .kb-rate-table th,
+    .kb-rate-table td {
+      padding: 13px 7px;
+      border-bottom: 1px solid #e8e5e3;
+      color: #161616;
+      font-size: .76rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .kb-rate-table th {
+      font-weight: 640;
+    }
+
+    .kb-rate-table th:first-child,
+    .kb-rate-table td:first-child {
+      width: 58%;
+      padding-left: 0;
+      text-align: left;
+    }
+
+    .kb-rate-table th:last-child,
+    .kb-rate-table td:last-child {
+      padding-right: 0;
+    }
+
+    .kb-currency {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 90px;
+    }
+
+    .kb-currency img {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 auto;
+      display: block;
+      border: 1px solid rgba(23,23,26,.07);
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 6px rgba(24,18,13,.08);
+    }
+
+    .kb-currency strong {
+      font-size: .88rem;
+      font-weight: 520;
+    }
+
+    .kb-card-footer {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: auto;
+      padding-top: 22px;
+    }
+
+    .kb-card-footer p {
+      margin: 0;
+      color: #1e1e1e;
+      font-size: .75rem;
+      line-height: 1.45;
+    }
+
+    .kb-card-footer p strong {
+      font-weight: 520;
+    }
+
+    .kb-sbdk-subtitle {
+      margin: 2px 0 17px;
+      color: #4b3026;
+      font-size: .87rem;
+      font-weight: 540;
+    }
+
+    .kb-sbdk-block {
+      padding: 18px 0 19px;
+      border-top: 1px solid #e8e5e3;
+    }
+
+    .kb-sbdk-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .kb-sbdk-grid-three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .kb-sbdk-grid-two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 76%;
+      margin-top: 19px;
+    }
+
+    .kb-sbdk-metric {
+      min-width: 0;
+    }
+
+    .kb-sbdk-metric span,
+    .kb-consumer-title {
+      display: block;
+      color: #171717;
+      font-size: .69rem;
+      font-weight: 520;
+      line-height: 1.38;
+    }
+
+    .kb-sbdk-metric strong {
+      display: block;
+      margin-top: 13px;
+      color: #0f0f10;
+      font-size: .91rem;
+      font-weight: 760;
+      line-height: 1;
+    }
+
+    .kb-consumer-block {
+      padding-top: 17px;
+      padding-bottom: 20px;
+    }
+
+    .kb-card-footer-end {
+      justify-content: flex-end;
+      padding-top: 19px;
+      border-top: 1px solid #e8e5e3;
+    }
+
+    .kb-text-link-static {
+      cursor: default;
+    }
+
+    @media (max-width: 1180px) {
+      .kb-latest-layout {
+        grid-template-columns: 1fr;
+        gap: 34px;
+      }
+
+      .kb-press-column {
+        padding-right: 0;
+      }
+
+      .kb-press-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .kb-press-item {
+        min-height: 128px;
+        padding: 16px 0 22px;
+        border-top: 1px solid #e7e4e1;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .kb-latest-section {
+        padding: 34px 0 42px;
+      }
+
+      .kb-latest-layout {
+        gap: 32px;
+      }
+
+      .kb-latest-heading {
+        margin-bottom: 16px;
+      }
+
+      .kb-press-list,
+      .kb-market-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kb-press-list {
+        gap: 0;
+      }
+
+      .kb-press-item {
+        min-height: 0;
+        padding: 15px 0 20px;
+        border-top: 0;
+      }
+
+      .kb-press-item:first-child {
+        border-top: 1px solid #e7e4e1;
+      }
+
+      .kb-market-card {
+        min-height: auto;
+        padding: 16px;
+        border-radius: 14px;
+      }
+
+      .kb-sbdk-grid-three {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 24px;
+      }
+
+      .kb-sbdk-grid-two {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .kb-latest-section .container {
+        width: min(calc(100% - 24px), var(--container));
+      }
+
+      .kb-rate-table th:first-child,
+      .kb-rate-table td:first-child {
+        width: 52%;
+      }
+
+      .kb-card-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .kb-card-footer .kb-text-link {
+        align-self: flex-end;
+      }
+
+      .kb-sbdk-grid-three,
+      .kb-sbdk-grid-two {
+        grid-template-columns: 1fr 1fr;
+        gap: 22px 16px;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <a class="skip-link" href="#content">Lewati ke konten</a>
@@ -4157,7 +4615,7 @@
       <a class="brand" href="#top" aria-label="KB Bank beranda">
         <span class="brand-line" aria-hidden="true"></span>
         <strong>KB Bank</strong>
-        <span>Pinjaman Digital</span>
+        <span>Digital Lending</span>
       </a>
 
       <nav class="nav-links kb-functional-nav" aria-label="Navigasi utama">
@@ -4327,12 +4785,14 @@
           <div class="eyebrow">Solusi kebutuhan Anda</div>
 
           <h1>
-            Solusi Masa Depan Anda,<br>
-            <span class="accent">Pinjaman KB BANK</span>
+            Kebutuhan Anda,<br>
+            <span class="accent">lebih mudah diajukan.</span>
           </h1>
 
           <p class="hero-lead">
-            KB Bank hadir memberikan fasilitas pinjaman sesuai keinginan dan kebutuhanmu dengan syarat pengajuan yang mudah
+            Pengalaman pengajuan yang lebih ringkas, terarah, dan mudah dipahami.
+            Setiap permohonan tetap melalui verifikasi data dan analisis kelayakan
+            sesuai ketentuan yang berlaku.
           </p>
 
           <div class="hero-actions">
@@ -4366,57 +4826,190 @@
       </div>
     </section>
 
-    <section class="process-wrap" id="proses">
-      <div class="container">
-        <div class="process-panel reveal">
-          <div class="process-intro">
-            <span>Alur pengajuan</span>
-            <strong>Sederhana dari awal, jelas di setiap tahap.</strong>
+    
+    <section class="kb-latest-section" id="proses" aria-labelledby="kbLatestInfoTitle">
+      <div class="container kb-latest-layout">
+
+        <section class="kb-press-column" aria-labelledby="kbPressTitle">
+          <div class="kb-latest-heading">
+            <span class="kb-latest-heading-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 3.75h10.5L19 7.3v12.95H5V3.75Z" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
+                <path d="M15.3 3.9V7.6H19M8 9.4h7.8M8 12.6h7.8M8 15.8h5.4" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <h2 id="kbPressTitle">Siaran Pers</h2>
           </div>
 
-          <article class="process-card">
-            <div class="process-head">
-              <span class="step">01</span>
-              <span class="step-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path d="M6 3.8h8l4 4V20H6V3.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-                  <path d="M14 3.8V8h4M9 12h6M9 15.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              </span>
-            </div>
-            <strong>Isi kebutuhan</strong>
-            <p>Tentukan kebutuhan pembiayaan dan informasi dasar yang diperlukan.</p>
-          </article>
+          <div class="kb-press-list">
+            <article class="kb-press-item">
+              <time datetime="2026-08-10">10 Agustus 2026</time>
+              <a href="https://www.kbbank.co.id/press-conference" target="_blank" rel="noopener noreferrer">
+                KB Bank Raih Dua Penghargaan Bergensi di Bidang Layanan Perbankan dan Reputasi Korporasi, Bukti Penguatan Kepercayaan di Tengah Transformasi
+              </a>
+            </article>
 
-          <article class="process-card">
-            <div class="process-head">
-              <span class="step">02</span>
-              <span class="step-icon" aria-hidden="true">
-                <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-                  <path d="M8.5 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6ZM3.8 18.8c.7-3 2.4-4.7 4.7-4.7s4 1.7 4.7 4.7M15 7h5M15 11h5M15 15h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              </span>
-            </div>
-            <strong>Verifikasi data</strong>
-            <p>Data dan dokumen diperiksa sesuai proses verifikasi yang berlaku.</p>
-          </article>
+            <article class="kb-press-item">
+              <time datetime="2026-08-04">04 Agustus 2026</time>
+              <a href="https://www.kbbank.co.id/press-conference" target="_blank" rel="noopener noreferrer">
+                KB Bank Dorong Pemberdayaan Penyandang Disabilitas melalui Program KREASIK Bersama Terala Foundation
+              </a>
+            </article>
 
-          <article class="process-card">
-            <div class="process-head">
-              <span class="step">03</span>
-              <span class="step-icon" aria-hidden="true">
-                <svg width="23" height="23" viewBox="0 0 24 24" fill="none">
-                  <circle cx="10.5" cy="10.5" r="6.5" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="m15.2 15.2 5 5M7.6 10.4l1.8 1.8 3.7-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </span>
-            </div>
-            <strong>Analisis pengajuan</strong>
-            <p>Keputusan kredit mengikuti hasil analisis dan ketentuan yang berlaku.</p>
-          </article>
-        </div>
+            <article class="kb-press-item">
+              <time datetime="2026-07-22">22 Juli 2026</time>
+              <a href="https://www.kbbank.co.id/press-conference" target="_blank" rel="noopener noreferrer">
+                KB Bank Tanamkan Literasi Keuangan Sejak Dini melalui Program “Belajar Finansial Bareng KB Bank”
+              </a>
+            </article>
+          </div>
+
+          <div class="kb-section-link-row">
+            <a class="kb-text-link" href="https://www.kbbank.co.id/press-conference" target="_blank" rel="noopener noreferrer">
+              Selengkapnya
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m7.5 5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+        </section>
+
+        <section class="kb-market-column" aria-labelledby="kbLatestInfoTitle">
+          <div class="kb-latest-heading">
+            <span class="kb-latest-heading-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 3.75h10.5L19 7.3v12.95H5V3.75Z" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
+                <path d="M15.3 3.9V7.6H19M8 9.4h7.8M8 12.6h7.8M8 15.8h5.4" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <h2 id="kbLatestInfoTitle">Info Terbaru</h2>
+          </div>
+
+          <div class="kb-market-grid">
+            <article class="kb-market-card kb-currency-card">
+              <header class="kb-card-title">
+                <span class="kb-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M18.7 8.3A7.7 7.7 0 0 0 6.2 6.1L4.5 7.8M5.3 15.7A7.7 7.7 0 0 0 17.8 18l1.7-1.8" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/>
+                    <path d="M4.5 4.8v3h3M19.5 19.2v-3h-3" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <h3>KURS</h3>
+              </header>
+
+              <div class="kb-rate-tabs" role="tablist" aria-label="Informasi kurs">
+                <button class="kb-rate-tab is-active" type="button" role="tab" aria-selected="true">Kurs Valas</button>
+                <button class="kb-rate-tab" type="button" role="tab" aria-selected="false" disabled>Kalkulator</button>
+              </div>
+
+              <div class="kb-rate-table-wrap">
+                <table class="kb-rate-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Mata Uang</th>
+                      <th scope="col">Jual</th>
+                      <th scope="col">Beli</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <span class="kb-currency">
+                          <img src="https://www.countryflags.com/wp-content/uploads/singapore-flag-png-large.png" alt="Bendera Singapura" loading="lazy" referrerpolicy="no-referrer">
+                          <strong>SGD</strong>
+                        </span>
+                      </td>
+                      <td>–</td>
+                      <td>–</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span class="kb-currency">
+                          <img src="https://www.countryflags.com/wp-content/uploads/united-states-of-america-flag-png-large.png" alt="Bendera Amerika Serikat" loading="lazy" referrerpolicy="no-referrer">
+                          <strong>USD</strong>
+                        </span>
+                      </td>
+                      <td>–</td>
+                      <td>–</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span class="kb-currency">
+                          <img src="https://www.countryflags.com/wp-content/uploads/europe-flag-jpg-xl-768x512.jpg" alt="Bendera Uni Eropa" loading="lazy" referrerpolicy="no-referrer">
+                          <strong>EUR</strong>
+                        </span>
+                      </td>
+                      <td>–</td>
+                      <td>–</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <footer class="kb-card-footer">
+                <p><em>Terakhir diperbarui pada<br><strong>1/9/2026, 14:19</strong></em></p>
+                <a class="kb-text-link" href="https://www.kbbank.co.id/currency-info" target="_blank" rel="noopener noreferrer">
+                  Selengkapnya
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m7.5 5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+              </footer>
+            </article>
+
+            <article class="kb-market-card kb-sbdk-card">
+              <header class="kb-card-title">
+                <span class="kb-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="3.75" y="5.25" width="16.5" height="13.5" rx="1.8" stroke="currentColor" stroke-width="1.55"/>
+                    <path d="M7 9.25h10M7 12h2.3M11 12h2.3M15 12h2M7 14.75h2.3M11 14.75h2.3M15 14.75h2" stroke="currentColor" stroke-width="1.45" stroke-linecap="round"/>
+                  </svg>
+                </span>
+                <h3>SBDK</h3>
+              </header>
+
+              <p class="kb-sbdk-subtitle">Suku Bunga Dasar Kredit</p>
+
+              <div class="kb-sbdk-block">
+                <div class="kb-sbdk-grid kb-sbdk-grid-three">
+                  <div class="kb-sbdk-metric">
+                    <span>Kredit Korporasi</span>
+                    <strong>9.37%</strong>
+                  </div>
+                  <div class="kb-sbdk-metric">
+                    <span>Kredit Ritel</span>
+                    <strong>9.51%</strong>
+                  </div>
+                  <div class="kb-sbdk-metric">
+                    <span>Kredit Mikro</span>
+                    <strong>9.51%</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="kb-sbdk-block kb-consumer-block">
+                <span class="kb-consumer-title">Kredit Konsumsi</span>
+                <div class="kb-sbdk-grid kb-sbdk-grid-two">
+                  <div class="kb-sbdk-metric">
+                    <span>KPR</span>
+                    <strong>9.92%</strong>
+                  </div>
+                  <div class="kb-sbdk-metric">
+                    <span>Non-KPR</span>
+                    <strong>9.92%</strong>
+                  </div>
+                </div>
+              </div>
+
+              <footer class="kb-card-footer kb-card-footer-end">
+                <span class="kb-text-link kb-text-link-static" aria-label="Informasi SBDK selengkapnya">
+                  Selengkapnya
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m7.5 5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </footer>
+            </article>
+          </div>
+        </section>
+
       </div>
     </section>
+
 
 
     <section class="loan-products" id="jenis-pinjaman">
@@ -4507,7 +5100,8 @@
         </div>
 
         <p class="loan-source-note">
-          Kategori dan visual produk mengacu pada informasi produk KB Bank. Detail masing-masing produk dapat dilihat pada halaman produk terkait.
+          Nama kategori dan gambar produk pada section ini mengikuti materi referensi KB Bank yang Anda berikan.
+          Tautan detail produk belum dipasang karena URL halaman detail masing-masing produk belum tersedia.
         </p>
       </div>
     </section>
