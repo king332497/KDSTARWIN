@@ -145,8 +145,23 @@
     if(save)save.disabled=true;
     if(stateEl)stateEl.textContent='Menyimpan…';
     try{
+      let staged=null;
+      if(heroPendingImages.length){
+        const uploadId=(crypto.randomUUID?.()||`${Date.now()}_${Math.random().toString(36).slice(2)}`).replace(/[^A-Za-z0-9_-]/g,'_');
+        const mimes=[];
+        for(let i=0;i<heroPendingImages.length;i++){
+          if(stateEl)stateEl.textContent=`Mengunggah gambar ${i+1} dari ${heroPendingImages.length}…`;
+          const uploaded=await api('/api/admin/content/hero/image-stage',{
+            method:'PUT',
+            body:JSON.stringify({upload_id:uploadId,slot:i,image_data:heroPendingImages[i]})
+          });
+          mimes.push(uploaded.mime);
+        }
+        staged={upload_id:uploadId,image_count:heroPendingImages.length,image_mimes:mimes};
+      }
+      if(stateEl)stateEl.textContent='Menerapkan Hero Visual…';
       const body=heroFormPayload({
-        ...(heroPendingImages.length?{images_data:heroPendingImages}:{}),
+        ...(staged||{}),
         ...(removeImage?{remove_image:true}:{})
       });
       const d=await api('/api/admin/content/hero',{method:'PUT',body:JSON.stringify(body)});

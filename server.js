@@ -264,6 +264,24 @@ const HERO_CONTENT_KEY = 'hero:meta';
 const HERO_IMAGE_KEY = 'hero:image'; // legacy single-image key
 const HERO_MAX_IMAGES = 5;
 const heroImageSlotKey = slot => `hero:image:${slot}`;
+const HERO_STAGE_TTL_SECONDS = 15 * 60;
+const heroStageKey = (uploadId,slot) => `hero:stage:${uploadId}:${slot}`;
+function heroUploadId(value) {
+  const id=String(value||'').trim();
+  return /^[A-Za-z0-9_-]{8,96}$/.test(id) ? id : null;
+}
+async function setHeroStageValue(key,value) {
+  setLocalContent(key,value);
+  if (SHARED_STATE_ENABLED) {
+    const result=await redisCommand('SET',contentRedisKey(key),String(value),'EX',String(HERO_STAGE_TTL_SECONDS));
+    if (result!=='OK') throw new Error('HERO_STORAGE_WRITE_FAILED');
+  }
+}
+async function deleteHeroStage(uploadId,count=HERO_MAX_IMAGES) {
+  for(let i=0;i<Math.min(HERO_MAX_IMAGES,Math.max(0,Number(count)||0));i++) {
+    await deleteContentValue(heroStageKey(uploadId,i));
+  }
+}
 const HERO_DEFAULT = Object.freeze({
   chip_one_title: 'KBstar',
   chip_one_subtitle: 'Digital banking experience',
@@ -824,6 +842,33 @@ async function handler(req,res) {
       return json(res,200,{hero:publicHero(meta)});
     }
 
+    if (pathname==='/api/admin/content/hero/image-stage' && req.method==='PUT') {
+      const ctx=enforceAdmin(req,res,'content'); if(!ctx) return;
+      if(!verifyCsrf(req,ctx.session)) return json(res,403,{error:'CSRF'});
+      let body;
+      try { body=await readBody(req,850_000); }
+      catch(err) {
+        if(err?.message==='BODY_TOO_LARGE') return json(res,413,{error:'IMAGE_REQUEST_TOO_LARGE',message:'Gambar terlalu besar untuk diunggah. Pilih gambar yang lebih kecil.'});
+        throw err;
+      }
+      const uploadId=heroUploadId(body.upload_id);
+      const slot=Number(body.slot);
+      if(!uploadId || !Number.isInteger(slot) || slot<0 || slot>=HERO_MAX_IMAGES) {
+        return json(res,422,{error:'INVALID_UPLOAD_SLOT',message:'Slot upload gambar tidak valid.'});
+      }
+      const match=String(body.image_data||'').match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/);
+      if(!match) return json(res,422,{error:'INVALID_IMAGE',message:'Gunakan gambar PNG, JPG, atau WebP.'});
+      let buffer;
+      try { buffer=Buffer.from(match[2],'base64'); } catch { return json(res,422,{error:'INVALID_IMAGE'}); }
+      if(!buffer.length || buffer.length>HERO_IMAGE_MAX_BYTES) {
+        return json(res,413,{error:'IMAGE_TOO_LARGE',message:'Setiap gambar setelah optimasi maksimal 450 KB.'});
+      }
+      const detected=detectImageMime(buffer);
+      if(!detected || detected!==match[1]) return json(res,422,{error:'INVALID_IMAGE_SIGNATURE',message:'Format gambar tidak valid.'});
+      await setHeroStageValue(heroStageKey(uploadId,slot),`${detected}|${match[2]}`);
+      return json(res,200,{ok:true,slot,mime:detected,bytes:buffer.length});
+    }
+
     if (pathname==='/api/admin/content/hero' && req.method==='PUT') {
       const ctx=enforceAdmin(req,res,'content'); if(!ctx) return;
       if(!verifyCsrf(req,ctx.session)) return json(res,403,{error:'CSRF'});
@@ -852,8 +897,36 @@ async function handler(req,res) {
         next.image_mimes=[];
       }
 
+      const stagedUploadId=heroUploadId(body.upload_id);
+      const stagedCount=Math.min(HERO_MAX_IMAGES,Math.max(0,Number(body.image_count)||0));
+      if(stagedUploadId && stagedCount) {
+        const parsed=[];
+        for(let i=0;i<stagedCount;i++) {
+          const raw=await getContentValue(heroStageKey(stagedUploadId,i));
+          if(!raw) return json(res,409,{error:'MISSING_STAGED_IMAGE',message:`Upload gambar ${i+1} belum lengkap. Silakan simpan ulang.`});
+          const sep=raw.indexOf('|');
+          if(sep<1) return json(res,422,{error:'INVALID_STAGED_IMAGE'});
+          const mime=raw.slice(0,sep), b64=raw.slice(sep+1);
+          let buffer;
+          try { buffer=Buffer.from(b64,'base64'); } catch { return json(res,422,{error:'INVALID_STAGED_IMAGE'}); }
+          const detected=detectImageMime(buffer);
+          if(!buffer.length || buffer.length>HERO_IMAGE_MAX_BYTES || !detected || detected!==mime) {
+            return json(res,422,{error:'INVALID_STAGED_IMAGE',message:`Gambar ${i+1} tidak valid.`});
+          }
+          parsed.push({buffer,mime:detected});
+        }
+        await deleteContentValue(HERO_IMAGE_KEY);
+        for(let i=0;i<HERO_MAX_IMAGES;i++) await deleteContentValue(heroImageSlotKey(i));
+        for(let i=0;i<parsed.length;i++) await setContentValue(heroImageSlotKey(i),parsed[i].buffer.toString('base64'));
+        next.has_custom_image=true;
+        next.image_mime=parsed[0].mime;
+        next.image_count=parsed.length;
+        next.image_mimes=parsed.map(x=>x.mime);
+        await deleteHeroStage(stagedUploadId,stagedCount);
+      }
+
       const incomingImages=Array.isArray(body.images_data) ? body.images_data.slice(0,HERO_MAX_IMAGES) : (body.image_data ? [body.image_data] : null);
-      if(incomingImages && incomingImages.length) {
+      if(!stagedUploadId && incomingImages && incomingImages.length) {
         const parsed=[];
         for(const dataUrl of incomingImages){
           const match=String(dataUrl).match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/);
@@ -1033,7 +1106,11 @@ async function handler(req,res) {
     return text(res,404,'Not Found');
   } catch (err) {
     console.error(err);
-    if (!res.headersSent) return json(res,500,{error:'SERVER_ERROR'});
+    if (!res.headersSent) {
+      if(err?.message==='BODY_TOO_LARGE') return json(res,413,{error:'BODY_TOO_LARGE',message:'Data yang dikirim terlalu besar.'});
+      if(err?.message==='HERO_STORAGE_WRITE_FAILED') return json(res,503,{error:'HERO_STORAGE_WRITE_FAILED',message:'Penyimpanan gambar sementara gagal. Coba lagi beberapa detik.'});
+      return json(res,500,{error:'SERVER_ERROR',message:'Terjadi kesalahan server saat memproses permintaan.'});
+    }
     try { res.end(); } catch {}
   }
 }
