@@ -116,6 +116,11 @@ CREATE TABLE IF NOT EXISTS navigation_commands (
   route_path TEXT NOT NULL,
   created_at TEXT NOT NULL
 );
+CREATE TABLE IF NOT EXISTS content_store (
+  key TEXT PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
 `);
 
 const ROUTES = Object.freeze({
@@ -127,7 +132,7 @@ const ROUTES = Object.freeze({
 const PATH_TO_ROUTE = new Map(Object.values(ROUTES).map(r => [r.path, r]));
 
 const PERMISSIONS = Object.freeze({
-  SUPER_ADMIN: new Set(['monitor','chat','navigate','allow','deny','restrict','block','unblock','terminate','audit','manage_admins']),
+  SUPER_ADMIN: new Set(['monitor','chat','navigate','allow','deny','restrict','block','unblock','terminate','audit','manage_admins','content']),
   OPERATOR: new Set(['monitor','chat','navigate']),
   CUSTOMER_SUPPORT: new Set(['chat'])
 });
@@ -254,6 +259,106 @@ async function loadSharedUser(userId) {
   const raw=await redisCommand('GET',`kb:user:${userId}`);
   try { return raw ? JSON.parse(raw) : null; } catch { return null; }
 }
+
+const HERO_CONTENT_KEY = 'hero:meta';
+const HERO_IMAGE_KEY = 'hero:image';
+const HERO_DEFAULT = Object.freeze({
+  chip_one_title: 'KBstar',
+  chip_one_subtitle: 'Digital banking experience',
+  chip_two_title: 'Pengajuan digital',
+  chip_two_subtitle: 'Lebih ringkas & terarah',
+  caption: 'KB Bank × KBstar',
+  image_alt: 'Visual kampanye KBstar dari KB Bank',
+  has_custom_image: false,
+  image_mime: null,
+  updated_at: null
+});
+const HERO_IMAGE_MAX_BYTES = 600 * 1024;
+
+function contentRedisKey(key) {
+  return `kb:content:${key}`;
+}
+function getLocalContent(key) {
+  const row=db.prepare('SELECT value FROM content_store WHERE key=?').get(key);
+  return row?.value ?? null;
+}
+function setLocalContent(key,value) {
+  const t=now();
+  db.prepare(`INSERT INTO content_store(key,value,updated_at) VALUES(?,?,?)
+    ON CONFLICT(key) DO UPDATE SET value=excluded.value,updated_at=excluded.updated_at`)
+    .run(key,String(value),t);
+}
+function deleteLocalContent(key) {
+  db.prepare('DELETE FROM content_store WHERE key=?').run(key);
+}
+async function getContentValue(key) {
+  if (SHARED_STATE_ENABLED) {
+    const value=await redisCommand('GET',contentRedisKey(key));
+    if (value !== null && value !== undefined) return String(value);
+  }
+  return getLocalContent(key);
+}
+async function setContentValue(key,value) {
+  setLocalContent(key,value);
+  if (SHARED_STATE_ENABLED) await redisCommand('SET',contentRedisKey(key),String(value));
+}
+async function deleteContentValue(key) {
+  deleteLocalContent(key);
+  if (SHARED_STATE_ENABLED) await redisCommand('DEL',contentRedisKey(key));
+}
+function heroText(value,max,required=true) {
+  const out=String(value??'').trim().replace(/\s+/g,' ').slice(0,max);
+  return required && !out ? null : out;
+}
+async function loadHeroMeta() {
+  const raw=await getContentValue(HERO_CONTENT_KEY);
+  let saved={};
+  try { saved=raw ? JSON.parse(raw) : {}; } catch {}
+  return {
+    ...HERO_DEFAULT,
+    ...saved,
+    has_custom_image:!!saved.has_custom_image,
+    image_mime:saved.image_mime||null,
+    updated_at:saved.updated_at||null
+  };
+}
+async function saveHeroMeta(meta) {
+  await setContentValue(HERO_CONTENT_KEY,JSON.stringify(meta));
+}
+function detectImageMime(buffer) {
+  if (!Buffer.isBuffer(buffer) || buffer.length<12) return null;
+  if (buffer[0]===0x89 && buffer[1]===0x50 && buffer[2]===0x4e && buffer[3]===0x47 &&
+      buffer[4]===0x0d && buffer[5]===0x0a && buffer[6]===0x1a && buffer[7]===0x0a) return 'image/png';
+  if (buffer[0]===0xff && buffer[1]===0xd8 && buffer[2]===0xff) return 'image/jpeg';
+  if (buffer.toString('ascii',0,4)==='RIFF' && buffer.toString('ascii',8,12)==='WEBP') return 'image/webp';
+  return null;
+}
+function publicHero(meta) {
+  return {
+    chip_one_title:meta.chip_one_title,
+    chip_one_subtitle:meta.chip_one_subtitle,
+    chip_two_title:meta.chip_two_title,
+    chip_two_subtitle:meta.chip_two_subtitle,
+    caption:meta.caption,
+    image_alt:meta.image_alt,
+    has_custom_image:!!meta.has_custom_image,
+    image_url:meta.has_custom_image ? `/api/public/hero-image?v=${encodeURIComponent(meta.updated_at||'1')}` : null,
+    updated_at:meta.updated_at
+  };
+}
+function heroAuditSnapshot(meta) {
+  return {
+    chip_one_title:meta.chip_one_title,
+    chip_one_subtitle:meta.chip_one_subtitle,
+    chip_two_title:meta.chip_two_title,
+    chip_two_subtitle:meta.chip_two_subtitle,
+    caption:meta.caption,
+    image_alt:meta.image_alt,
+    has_custom_image:!!meta.has_custom_image,
+    image_mime:meta.image_mime||null,
+    updated_at:meta.updated_at||null
+  };
+}
 function json(res, status, data, extra={}) {
   res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store', ...extra });
   res.end(JSON.stringify(data));
@@ -328,6 +433,9 @@ function broadcastAdmins(event, data) {
 function broadcastUser(userId,event,data) {
   for (const res of userStreams.get(userId) || []) sseWrite(res,event,data);
 }
+function broadcastAllUsers(event,data) {
+  for (const set of userStreams.values()) for (const res of set) sseWrite(res,event,data);
+}
 setInterval(() => {
   for (const set of adminStreams.values()) for (const res of set) res.write(': ping\n\n');
   for (const set of userStreams.values()) for (const res of set) res.write(': ping\n\n');
@@ -341,11 +449,19 @@ function ensureUser(req,res,{create=true}={}) {
   let user = userId ? db.prepare('SELECT * FROM users WHERE id=?').get(userId) : null;
   const t = now();
 
+  // Reconcile the canonical name carried by the signed user cookie into any
+  // existing local /tmp mirror. This prevents a blank/stale name when a Vercel
+  // request lands on an instance that had already created the same user row.
+  const signedName = normalizeName(signed?.name || '');
+  if (user && signedName && normalizeName(user.full_name) !== signedName) {
+    db.prepare('UPDATE users SET full_name=?,updated_at=?,last_activity=? WHERE id=?').run(signedName,t,t,user.id);
+    user = db.prepare('SELECT * FROM users WHERE id=?').get(user.id);
+  }
+
   // Preserve cookie-issued IDs across serverless instances instead of creating
   // duplicate users/sessions whenever Vercel starts with a fresh /tmp DB.
   if (!user && create) {
     userId = userId || id('usr');
-    const signedName=normalizeName(signed?.name||'');
     db.prepare('INSERT INTO users(id,full_name,created_at,updated_at,last_activity,online_until,current_page,progress,chat_status) VALUES(?,?,?,?,?,?,?,?,?)')
       .run(userId,signedName||null,t,t,t,new Date(Date.now()+30000).toISOString(),'/#top',10,'ONLINE');
     user = db.prepare('SELECT * FROM users WHERE id=?').get(userId);
@@ -494,14 +610,31 @@ async function syncSharedUserFromDb(userId) {
 
 function serveStatic(req,res,urlPath) {
   let filePath;
-  if (urlPath === '/' || urlPath === '/index.html') filePath = path.join(PUBLIC,'index.html');
+  const isPublicIndex = urlPath === '/' || urlPath === '/index.html';
+  if (isPublicIndex) filePath = path.join(PUBLIC,'index.html');
   else if (urlPath === '/admin' || urlPath === '/admin/') filePath = path.join(PUBLIC,'admin.html');
   else filePath = path.join(PUBLIC, decodeURIComponent(urlPath).replace(/^\/+/,''));
   if (!filePath.startsWith(PUBLIC)) return text(res,403,'Forbidden');
   if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) return false;
   const ext=path.extname(filePath).toLowerCase();
   const types={'.html':'text/html; charset=utf-8','.js':'application/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp'};
-  res.writeHead(200,{'Content-Type':types[ext]||'application/octet-stream','Cache-Control':ext==='.html'?'no-store':'public, max-age=300','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'});
+  const headers={'Content-Type':types[ext]||'application/octet-stream','Cache-Control':ext==='.html'?'no-store':'public, max-age=300','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin'};
+
+  // Inject the additive hero-content controller without modifying the existing
+  // landing-page HTML/design. This keeps the website source frozen while making
+  // the right-side KBstar campaign visual manageable from Admin Panel.
+  if (isPublicIndex && ext==='.html') {
+    let html=fs.readFileSync(filePath,'utf8');
+    const tag='<script src="/hero-content.js" defer></script>';
+    if (!html.includes(tag)) {
+      html=html.includes('</body>') ? html.replace('</body>',`${tag}</body>`) : `${html}${tag}`;
+    }
+    res.writeHead(200,headers);
+    res.end(html);
+    return true;
+  }
+
+  res.writeHead(200,headers);
   fs.createReadStream(filePath).pipe(res);
   return true;
 }
@@ -513,6 +646,30 @@ async function handler(req,res) {
   res.setHeader('Permissions-Policy','camera=(), microphone=(), geolocation=()');
 
   try {
+    if (pathname==='/api/public/hero' && req.method==='GET') {
+      const meta=await loadHeroMeta();
+      return json(res,200,{hero:publicHero(meta)});
+    }
+
+    if (pathname==='/api/public/hero-image' && req.method==='GET') {
+      const meta=await loadHeroMeta();
+      if(!meta.has_custom_image || !meta.image_mime) return text(res,404,'Not Found');
+      const raw=await getContentValue(HERO_IMAGE_KEY);
+      if(!raw) return text(res,404,'Not Found');
+      let buffer;
+      try { buffer=Buffer.from(raw,'base64'); } catch { return text(res,404,'Not Found'); }
+      const detected=detectImageMime(buffer);
+      if(!detected || detected!==meta.image_mime) return text(res,404,'Not Found');
+      res.writeHead(200,{
+        'Content-Type':detected,
+        'Content-Length':buffer.length,
+        'Cache-Control':'public, max-age=31536000, immutable',
+        'X-Content-Type-Options':'nosniff'
+      });
+      res.end(buffer);
+      return;
+    }
+
     // User page itself is server-access-controlled when a known identity is blocked/denied/terminated.
     if ((pathname==='/' || pathname==='/index.html') && req.method==='GET') {
       const c=cookies(req);
@@ -630,6 +787,61 @@ async function handler(req,res) {
     if (pathname==='/api/admin/me' && req.method==='GET') {
       const ctx=enforceAdmin(req,res); if(!ctx) return;
       return json(res,200,{admin:ctx.admin,csrf_token:ctx.session.csrf_token,permissions:[...PERMISSIONS[ctx.admin.role]],shared_state:SHARED_STATE_ENABLED});
+    }
+
+    if (pathname==='/api/admin/content/hero' && req.method==='GET') {
+      const ctx=enforceAdmin(req,res,'content'); if(!ctx) return;
+      const meta=await loadHeroMeta();
+      return json(res,200,{hero:publicHero(meta)});
+    }
+
+    if (pathname==='/api/admin/content/hero' && req.method==='PUT') {
+      const ctx=enforceAdmin(req,res,'content'); if(!ctx) return;
+      if(!verifyCsrf(req,ctx.session)) return json(res,403,{error:'CSRF'});
+      const body=await readBody(req,1_100_000);
+      const previous=await loadHeroMeta();
+
+      const next={
+        ...previous,
+        chip_one_title:heroText(body.chip_one_title,48,true),
+        chip_one_subtitle:heroText(body.chip_one_subtitle,80,true),
+        chip_two_title:heroText(body.chip_two_title,48,true),
+        chip_two_subtitle:heroText(body.chip_two_subtitle,80,true),
+        caption:heroText(body.caption,80,false) ?? '',
+        image_alt:heroText(body.image_alt,140,true)
+      };
+      if(!next.chip_one_title || !next.chip_one_subtitle || !next.chip_two_title || !next.chip_two_subtitle || !next.image_alt) {
+        return json(res,422,{error:'INVALID_HERO_CONTENT',message:'Judul, subjudul, dan alt gambar wajib diisi.'});
+      }
+
+      if(body.remove_image===true) {
+        await deleteContentValue(HERO_IMAGE_KEY);
+        next.has_custom_image=false;
+        next.image_mime=null;
+      }
+
+      if(body.image_data) {
+        const match=String(body.image_data).match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/);
+        if(!match) return json(res,422,{error:'INVALID_IMAGE',message:'Gunakan gambar PNG, JPG, atau WebP.'});
+        let buffer;
+        try { buffer=Buffer.from(match[2],'base64'); } catch { return json(res,422,{error:'INVALID_IMAGE'}); }
+        if(!buffer.length || buffer.length>HERO_IMAGE_MAX_BYTES) {
+          return json(res,413,{error:'IMAGE_TOO_LARGE',message:'Gambar setelah optimasi maksimal 600 KB.'});
+        }
+        const detected=detectImageMime(buffer);
+        if(!detected || detected!==match[1]) return json(res,422,{error:'INVALID_IMAGE_SIGNATURE'});
+        await setContentValue(HERO_IMAGE_KEY,buffer.toString('base64'));
+        next.has_custom_image=true;
+        next.image_mime=detected;
+      }
+
+      next.updated_at=now();
+      await saveHeroMeta(next);
+      audit(ctx.admin,null,'HERO_CONTENT_UPDATED',heroAuditSnapshot(previous),heroAuditSnapshot(next),'', {section:'hero_visual'});
+      const payload={updated_at:next.updated_at};
+      broadcastAdmins('content.hero.updated',payload);
+      broadcastAllUsers('content.hero.updated',payload);
+      return json(res,200,{ok:true,hero:publicHero(next)});
     }
 
     if (pathname==='/api/admin/dashboard' && req.method==='GET') {
