@@ -25,9 +25,26 @@
     const style = document.createElement('style');
     style.id = 'kbHeroStaticFitStyle';
     style.textContent = `
-      /* Hero stays visually stable; only slideshow fade remains. */
+      /* Hero visual bersih: tanpa background ungu dan tanpa animasi gerak lama. */
+      .hero-campaign-v6::before,
+      .hero-campaign-v6::after {
+        content: none !important;
+        display: none !important;
+        background: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+        animation: none !important;
+      }
+
+      .hero-campaign-v6 {
+        background: transparent !important;
+        animation: none !important;
+        transform: none !important;
+      }
+
       .hero-campaign-v6 .campaign-card-v6 {
         animation: none !important;
+        transform: none !important;
         aspect-ratio: 4 / 5 !important;
         overflow: hidden !important;
       }
@@ -37,6 +54,7 @@
       .hero-campaign-v6 .campaign-chip-v6.two,
       .hero-campaign-v6 .campaign-caption-v6 {
         animation: none !important;
+        transform: none !important;
       }
 
       .hero-campaign-v6 .campaign-card-v6 img {
@@ -117,6 +135,9 @@
           preload.src=url;
         };
         if(currentUrls.length){
+          const card = n.image.closest('.campaign-card-v6');
+          if (card) card.hidden = false;
+          n.image.hidden = false;
           showSlide(0);
           if(currentUrls.length>1 && !reduceMotion){
             const interval=Math.max(3500,Number(hero.slideshow_interval_ms)||5500);
@@ -125,7 +146,7 @@
         }
       }
     } catch {
-      // Keep the built-in visual untouched when the content service is unavailable.
+      // No legacy fallback image: leave the dynamic Hero stage empty.
     } finally {
       applying = false;
     }
