@@ -7,9 +7,14 @@
   ];
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const fmt=iso=>iso?new Intl.DateTimeFormat('id-ID',{dateStyle:'short',timeStyle:'medium'}).format(new Date(iso)):'—';
-  const api=async(url,opts={})=>{const headers={'Content-Type':'application/json',...(opts.headers||{})};if(state.csrf&&opts.method&&opts.method!=='GET')headers['X-CSRF-Token']=state.csrf;const r=await fetch(url,{credentials:'same-origin',...opts,headers});let d={};try{d=await r.json()}catch{}if(!r.ok){const e=new Error(d.message||d.error||`HTTP ${r.status}`);e.status=r.status;e.data=d;throw e}return d};
+  const api=async(url,opts={})=>{const headers={'Content-Type':'application/json',...(opts.headers||{})};if(state.csrf&&opts.method&&opts.method!=='GET')headers['X-CSRF-Token']=state.csrf;const r=await fetch(url,{credentials:'same-origin',...opts,headers});let d={};try{d=await r.json()}catch{}if(!r.ok){if(r.status===401&&d.error==='UNAUTHENTICATED'&&url!=='/api/admin/login')showLoginForExpiredSession();const e=new Error(d.message||d.error||`HTTP ${r.status}`);e.status=r.status;e.data=d;throw e}return d};
   const can=p=>!p||state.permissions.has(p);
   const toast=(msg)=>{const n=document.createElement('div');n.className='toast';n.textContent=msg;$('#toasts').appendChild(n);setTimeout(()=>n.remove(),4200)};
+  function showLoginForExpiredSession(){
+    state.events?.close(); state.events=null; state.csrf=''; state.admin=null; state.permissions=new Set();
+    $('#app')?.classList.add('hidden'); $('#loginView')?.classList.remove('hidden');
+    const err=$('#loginError'); if(err)err.textContent='Sesi admin berakhir. Silakan masuk kembali.';
+  }
   const beep=()=>{if(!state.audio)return;try{const c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.frequency.value=720;g.gain.value=.04;o.connect(g);g.connect(c.destination);o.start();o.stop(c.currentTime+.12)}catch{}};
   const statusBadge=u=>`<span class="status ${u.status==='ACTIVE'?'s-active':u.status==='BLOCKED'?'s-blocked':'s-restricted'}">${esc(u.status)}</span>`;
   const navHtml=()=>views.filter(([, ,p])=>can(p)).map(([id,label])=>`<button data-nav="${id}">${esc(label)}${id==='chat'?'<span class="badge chat-badge">0</span>':''}</button>`).join('');
@@ -56,8 +61,17 @@
   async function loadAudit(){if(!can('audit'))return;const d=await api('/api/admin/audit');$('#auditLog').innerHTML=(d.audit||[]).map(x=>`<div class="log-item"><time>${fmt(x.created_at)}</time><div><strong>${esc(x.action)}</strong> — ${esc(x.admin_name)} → ${esc(x.target_name||x.target_user_id||'system')}<br><small>Alasan: ${esc(x.reason||'—')}</small></div><span>${esc(x.new_state?.status||'')}</span></div>`).join('')||'<div class="log-item">Belum ada audit log.</div>'}
   async function loadActivity(){if(!can('monitor'))return;const d=await api('/api/admin/activity');$('#activityLog').innerHTML=(d.activity||[]).map(x=>`<div class="log-item"><time>${fmt(x.created_at)}</time><div><strong>${esc(x.full_name)}</strong> — ${esc(x.type)}<br><small>${esc(x.detail||'')}</small></div><span>${esc(x.session_id||'')}</span></div>`).join('')||'<div class="log-item">Belum ada activity.</div>'}
   async function loadAdmins(){if(!can('manage_admins'))return;const d=await api('/api/admin/admins');$('#adminCards').innerHTML=(d.admins||[]).map(a=>`<div class="list-card"><strong>${esc(a.full_name)}</strong><p>${esc(a.email)}<br>${esc(a.role)}</p></div>`).join('')}
-  function connectEvents(){state.events?.close();const es=new EventSource('/events/admin');state.events=es;es.addEventListener('chat.message',ev=>{const m=JSON.parse(ev.data);if(m.sender_type==='USER'){toast(`Pesan baru dari ${m.sender_name}`);beep()}if(state.selectedChat===m.user_id)selectChat(m.user_id).catch(()=>{});refreshAll().catch(()=>{})});es.addEventListener('chat.typing',ev=>{const d=JSON.parse(ev.data);if(state.selectedChat===d.user_id){$('#typingText').textContent=d.typing?'User sedang mengetik…':'';clearTimeout(state.typingTimer);state.typingTimer=setTimeout(()=>$('#typingText').textContent='',1800)}});['presence.updated','user.updated','user.created','session.started'].forEach(e=>es.addEventListener(e,()=>refreshAll().catch(()=>{})))}
-  async function boot(){try{const d=await api('/api/admin/me');state.admin=d.admin;state.csrf=d.csrf_token;state.permissions=new Set(d.permissions||[]);$('#loginView').classList.add('hidden');$('#app').classList.remove('hidden');$('#adminName').textContent=state.admin.full_name;$('#adminRole').textContent=state.admin.role;setupNav();$('#audioToggle').checked=state.audio;await refreshAll();connectEvents()}catch{}}
+  function connectEvents(){
+    state.events?.close();
+    const es=new EventSource('/events/admin'); state.events=es;
+    es.addEventListener('chat.message',ev=>{const m=JSON.parse(ev.data);if(m.sender_type==='USER'){toast(`Pesan baru dari ${m.sender_name||'user'}`);beep()}if(state.selectedChat===m.user_id)selectChat(m.user_id).catch(()=>{});refreshAll().catch(()=>{})});
+    es.addEventListener('chat.typing',ev=>{const d=JSON.parse(ev.data);if(state.selectedChat===d.user_id){$('#typingText').textContent=d.typing?'User sedang mengetik…':'';clearTimeout(state.typingTimer);state.typingTimer=setTimeout(()=>$('#typingText').textContent='',1800)}});
+    es.addEventListener('user.created',()=>{toast('User baru masuk');beep();refreshAll().catch(()=>{})});
+    es.addEventListener('session.started',()=>{refreshAll().catch(()=>{})});
+    ['presence.updated','user.updated'].forEach(e=>es.addEventListener(e,()=>refreshAll().catch(()=>{})));
+    es.addEventListener('error',()=>{setTimeout(()=>api('/api/admin/me').catch(()=>{}),500)});
+  }
+  async function boot(){try{const d=await api('/api/admin/me');state.admin=d.admin;state.csrf=d.csrf_token;state.permissions=new Set(d.permissions||[]);$('#loginView').classList.add('hidden');$('#app').classList.remove('hidden');$('#adminName').textContent=state.admin.full_name;$('#adminRole').textContent=state.admin.role;setupNav();$('#audioToggle').checked=state.audio;await refreshAll();connectEvents()}catch(err){if(err?.status!==401){const el=$('#loginError');if(el)el.textContent='Admin Panel belum dapat terhubung ke server.';}}}
   $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();$('#loginError').textContent='';const body=Object.fromEntries(new FormData(e.currentTarget).entries());try{await api('/api/admin/login',{method:'POST',body:JSON.stringify(body)});await boot()}catch(err){$('#loginError').textContent=err.message}});
   $('#chatForm').addEventListener('submit',e=>{e.preventDefault();sendChat().catch(err=>toast(err.message))});
   $('#chatInput').addEventListener('input',()=>{if(!state.selectedChat)return;api(`/api/admin/users/${encodeURIComponent(state.selectedChat)}/typing`,{method:'POST',body:JSON.stringify({typing:true})}).catch(()=>{});clearTimeout(state.typingTimer);state.typingTimer=setTimeout(()=>api(`/api/admin/users/${encodeURIComponent(state.selectedChat)}/typing`,{method:'POST',body:JSON.stringify({typing:false})}).catch(()=>{}),750)});
