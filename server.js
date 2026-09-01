@@ -9,7 +9,6 @@ const { DatabaseSync } = require('node:sqlite');
 const ROOT = __dirname;
 const PUBLIC = path.join(ROOT, 'public');
 const PORT = Number(process.env.PORT || 3000);
-
 const DB_PATH = process.env.KB_DB_PATH || (
   process.env.VERCEL
     ? '/tmp/kb-realtime.sqlite'
@@ -18,6 +17,15 @@ const DB_PATH = process.env.KB_DB_PATH || (
 const ADMIN_EMAIL = String(process.env.KB_ADMIN_EMAIL || 'admin@example.local').toLowerCase();
 const ADMIN_PASSWORD = process.env.KB_ADMIN_PASSWORD || '';
 const TEST_MODE = process.env.KB_TEST_MODE === '1';
+const ADMIN_AUTH_TTL_SECONDS = 60 * 60 * 12;
+const USER_AUTH_TTL_SECONDS = 60 * 60 * 24 * 30;
+const ADMIN_SESSION_SECRET = process.env.KB_ADMIN_SESSION_SECRET ||
+  crypto.createHash('sha256').update(`${ADMIN_PASSWORD}:kb-admin-session:v1`).digest('hex');
+const USER_SESSION_SECRET = process.env.KB_USER_SESSION_SECRET ||
+  crypto.createHash('sha256').update(`${ADMIN_PASSWORD}:kb-user-session:v1`).digest('hex');
+const REDIS_URL = String(process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || '').replace(/\/$/, '');
+const REDIS_TOKEN = String(process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || '');
+const SHARED_STATE_ENABLED = !!(REDIS_URL && REDIS_TOKEN);
 
 if (ADMIN_PASSWORD.length < 12) {
   console.error('KB_ADMIN_PASSWORD wajib diisi dan minimal 12 karakter.');
@@ -141,6 +149,51 @@ function verifyPassword(password, stored) {
   return actual.length === exp.length && crypto.timingSafeEqual(actual, exp);
 }
 
+function signAdminAuth(payload) {
+  const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const sig = crypto.createHmac('sha256', ADMIN_SESSION_SECRET).update(body).digest('base64url');
+  return `${body}.${sig}`;
+}
+function verifyAdminAuth(token) {
+  try {
+    const [body,sig] = String(token||'').split('.');
+    if (!body || !sig) return null;
+    const expected = crypto.createHmac('sha256', ADMIN_SESSION_SECRET).update(body).digest();
+    const actual = Buffer.from(sig,'base64url');
+    if (expected.length !== actual.length || !crypto.timingSafeEqual(expected,actual)) return null;
+    const payload = JSON.parse(Buffer.from(body,'base64url').toString('utf8'));
+    if (!payload?.id || !payload?.role || !payload?.csrf || Number(payload.exp||0) <= Date.now()) return null;
+    if (!PERMISSIONS[payload.role]) return null;
+    return payload;
+  } catch { return null; }
+}
+
+function signUserAuth(payload) {
+  const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const sig = crypto.createHmac('sha256', USER_SESSION_SECRET).update(body).digest('base64url');
+  return `${body}.${sig}`;
+}
+function verifyUserAuth(token) {
+  try {
+    const [body,sig] = String(token||'').split('.');
+    if (!body || !sig) return null;
+    const expected = crypto.createHmac('sha256', USER_SESSION_SECRET).update(body).digest();
+    const actual = Buffer.from(sig,'base64url');
+    if (expected.length !== actual.length || !crypto.timingSafeEqual(expected,actual)) return null;
+    const payload = JSON.parse(Buffer.from(body,'base64url').toString('utf8'));
+    if (!payload?.uid || !payload?.sid || !payload?.csrf || Number(payload.exp||0) <= Date.now()) return null;
+    return payload;
+  } catch { return null; }
+}
+function issueUserAuth(res,user,session) {
+  if (!user?.id || !session?.id || !session?.csrf_token) return;
+  const token=signUserAuth({
+    uid:user.id,sid:session.id,csrf:session.csrf_token,name:user.full_name||'',
+    iat:now(),exp:Date.now()+(USER_AUTH_TTL_SECONDS*1000)
+  });
+  setCookie(res,'kb_user_auth',token,{maxAge:USER_AUTH_TTL_SECONDS});
+}
+
 const existingAdmin = db.prepare('SELECT id FROM admins WHERE email=?').get(ADMIN_EMAIL);
 if (!existingAdmin) {
   db.prepare('INSERT INTO admins(id,email,full_name,role,password_hash,created_at,active) VALUES(?,?,?,?,?,?,1)')
@@ -163,6 +216,43 @@ function setCookie(res, name, value, opts={}) {
   if (process.env.NODE_ENV === 'production') bits.push('Secure');
   const prev = res.getHeader('Set-Cookie');
   res.setHeader('Set-Cookie', prev ? [...(Array.isArray(prev)?prev:[prev]), bits.join('; ')] : bits.join('; '));
+}
+
+async function redisCommand(...args) {
+  if (!SHARED_STATE_ENABLED) return null;
+  try {
+    const response = await fetch(REDIS_URL, {
+      method:'POST',
+      headers:{ Authorization:`Bearer ${REDIS_TOKEN}`, 'Content-Type':'application/json' },
+      body:JSON.stringify(args.map(v=>String(v)))
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    return data.result;
+  } catch (error) {
+    console.error('Shared state Redis error:', error.message);
+    return null;
+  }
+}
+async function saveSharedUser(snapshot) {
+  if (!SHARED_STATE_ENABLED || !snapshot?.id) return;
+  await Promise.all([
+    redisCommand('SET',`kb:user:${snapshot.id}`,JSON.stringify(snapshot),'EX','2592000'),
+    redisCommand('SADD','kb:users',snapshot.id)
+  ]);
+}
+async function loadSharedUsers() {
+  if (!SHARED_STATE_ENABLED) return [];
+  const ids = await redisCommand('SMEMBERS','kb:users');
+  if (!Array.isArray(ids) || !ids.length) return [];
+  const raw = await Promise.all(ids.slice(0,1000).map(uid=>redisCommand('GET',`kb:user:${uid}`)));
+  return raw.map(v=>{ try { return v ? JSON.parse(v) : null; } catch { return null; } }).filter(Boolean);
+}
+
+async function loadSharedUser(userId) {
+  if (!SHARED_STATE_ENABLED || !userId) return null;
+  const raw=await redisCommand('GET',`kb:user:${userId}`);
+  try { return raw ? JSON.parse(raw) : null; } catch { return null; }
 }
 function json(res, status, data, extra={}) {
   res.writeHead(status, { 'Content-Type':'application/json; charset=utf-8', 'Cache-Control':'no-store', ...extra });
@@ -245,16 +335,21 @@ setInterval(() => {
 
 function ensureUser(req,res,{create=true}={}) {
   const c = cookies(req);
-  let userId = c.kb_uid;
-  let sessionId = c.kb_sid;
+  const signed=verifyUserAuth(c.kb_user_auth);
+  let userId = signed?.uid || c.kb_uid;
+  let sessionId = signed?.sid || c.kb_sid;
   let user = userId ? db.prepare('SELECT * FROM users WHERE id=?').get(userId) : null;
   const t = now();
+
+  // Preserve cookie-issued IDs across serverless instances instead of creating
+  // duplicate users/sessions whenever Vercel starts with a fresh /tmp DB.
   if (!user && create) {
-    userId = id('usr');
-    db.prepare('INSERT INTO users(id,created_at,updated_at,last_activity,online_until,current_page,progress,chat_status) VALUES(?,?,?,?,?,?,?,?)')
-      .run(userId,t,t,t,new Date(Date.now()+30000).toISOString(),'/#top',10,'ONLINE');
+    userId = userId || id('usr');
+    const signedName=normalizeName(signed?.name||'');
+    db.prepare('INSERT INTO users(id,full_name,created_at,updated_at,last_activity,online_until,current_page,progress,chat_status) VALUES(?,?,?,?,?,?,?,?,?)')
+      .run(userId,signedName||null,t,t,t,new Date(Date.now()+30000).toISOString(),'/#top',10,'ONLINE');
     user = db.prepare('SELECT * FROM users WHERE id=?').get(userId);
-    setCookie(res,'kb_uid',userId,{maxAge:60*60*24*30});
+    setCookie(res,'kb_uid',userId,{maxAge:USER_AUTH_TTL_SECONDS});
     logActivity(userId,null,'USER_CREATED','Website session identity created');
     broadcastAdmins('user.created',{user_id:userId});
   }
@@ -265,19 +360,40 @@ function ensureUser(req,res,{create=true}={}) {
   let session = sessionId ? db.prepare('SELECT * FROM user_sessions WHERE id=? AND user_id=?').get(sessionId,user.id) : null;
   if (session?.revoked_at) return { error:'SESSION_TERMINATED', user, session };
   if (!session && create) {
-    sessionId = id('ses');
-    const csrf = crypto.randomBytes(24).toString('base64url');
+    sessionId = sessionId || id('ses');
+    const csrf = signed?.uid===user.id && signed?.sid===sessionId && signed?.csrf
+      ? String(signed.csrf)
+      : crypto.randomBytes(24).toString('base64url');
     db.prepare('INSERT INTO user_sessions(id,user_id,csrf_token,created_at,last_activity,current_page) VALUES(?,?,?,?,?,?)')
       .run(sessionId,user.id,csrf,t,t,user.current_page || '/#top');
     session = db.prepare('SELECT * FROM user_sessions WHERE id=?').get(sessionId);
-    setCookie(res,'kb_sid',sessionId);
+    setCookie(res,'kb_sid',sessionId,{maxAge:USER_AUTH_TTL_SECONDS});
     logActivity(user.id,sessionId,'SESSION_STARTED','User session started');
     broadcastAdmins('session.started',{user_id:user.id,session_id:sessionId});
   }
+
+  // Refresh the signed stateless session whenever an older browser is upgraded
+  // or a new serverless instance had to recreate the local mirror.
+  if (create && session && (!signed || signed.uid!==user.id || signed.sid!==session.id || signed.csrf!==session.csrf_token || normalizeName(signed.name)!==normalizeName(user.full_name))) {
+    issueUserAuth(res,user,session);
+  }
   return { user, session };
 }
+
 function ensureAdmin(req,res) {
   const c = cookies(req);
+
+  // Vercel-safe stateless admin auth. This does not depend on /tmp SQLite
+  // and therefore survives requests landing on different serverless instances.
+  const signed = verifyAdminAuth(c.kb_admin_auth);
+  if (signed) {
+    return {
+      admin:{id:signed.id,email:signed.email,full_name:signed.full_name,role:signed.role},
+      session:{id:`signed:${signed.id}`,csrf_token:signed.csrf,created_at:signed.iat,last_activity:now()}
+    };
+  }
+
+  // Backward-compatible fallback for local/VPS deployments.
   const sid = c.kb_admin_sid;
   if (!sid) return { error:'UNAUTHENTICATED' };
   const row = db.prepare(`SELECT s.*,a.email,a.full_name,a.role,a.active FROM admin_sessions s JOIN admins a ON a.id=s.admin_id WHERE s.id=?`).get(sid);
@@ -303,26 +419,55 @@ function enforceAdmin(req,res,permission=null) {
   return ctx;
 }
 
-function currentUsers() {
+async function currentUsers() {
   const rows = db.prepare(`
     SELECT u.*,
       (SELECT id FROM user_sessions s WHERE s.user_id=u.id AND s.revoked_at IS NULL ORDER BY s.created_at DESC LIMIT 1) session_id,
       (SELECT COUNT(*) FROM chat_messages m WHERE m.user_id=u.id AND m.sender_type='USER' AND m.status!='READ') unread_messages
     FROM users u ORDER BY u.created_at DESC
   `).all();
-  const nowMs = Date.now();
-  return rows.map(r => {
-    const online=!!r.online_until && new Date(r.online_until).getTime() > nowMs;
+
+  const local = rows.map(r => ({
+    id:r.id, full_name:r.full_name || '', status:r.status, access_state:r.access_state,
+    online_until:r.online_until, current_page:r.current_page, last_activity:r.last_activity, progress:r.progress,
+    chat_status:r.chat_status, session_id:r.session_id, unread_messages:Number(r.unread_messages||0),
+    created_at:r.created_at, updated_at:r.updated_at, blocked_reason:r.blocked_reason || null
+  }));
+
+  // Merge shared snapshots so identity/presence remains visible even when
+  // Vercel routes user/admin requests to different serverless instances.
+  const shared = await loadSharedUsers();
+  const byId = new Map();
+  for (const item of shared) if (item?.id) byId.set(item.id,item);
+  for (const item of local) {
+    const prev=byId.get(item.id);
+    const prevTime=new Date(prev?.updated_at||0).getTime();
+    const localTime=new Date(item.updated_at||0).getTime();
+    byId.set(item.id, prev && prevTime>localTime ? {...item,...prev} : {...prev,...item});
+  }
+
+  const nowMs=Date.now();
+  return [...byId.values()].map(r=>{
+    const online=!!r.online_until && new Date(r.online_until).getTime()>nowMs;
     return {
-      id:r.id, full_name:r.full_name || 'Belum diidentifikasi', status:r.status, access_state:r.access_state,
-      online, current_page:r.current_page, last_activity:r.last_activity, progress:r.progress,
-      chat_status:online?'ONLINE':'OFFLINE', session_id:r.session_id, unread_messages:Number(r.unread_messages||0), created_at:r.created_at,
+      id:r.id,
+      full_name:r.full_name || 'Belum diidentifikasi',
+      status:r.status || 'ACTIVE',
+      access_state:r.access_state || 'ALLOWED',
+      online,
+      current_page:r.current_page || '/#top',
+      last_activity:r.last_activity || r.updated_at || r.created_at,
+      progress:Number(r.progress||0),
+      chat_status:online?'ONLINE':(r.chat_status||'OFFLINE'),
+      session_id:r.session_id || null,
+      unread_messages:Number(r.unread_messages||0),
+      created_at:r.created_at || r.updated_at || now(),
       blocked_reason:r.blocked_reason || null
     };
-  });
+  }).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
 }
-function dashboardStats() {
-  const users = currentUsers();
+async function dashboardStats() {
+  const users = await currentUsers();
   const today = new Date(); today.setHours(0,0,0,0);
   return {
     online_users: users.filter(u=>u.online).length,
@@ -332,6 +477,19 @@ function dashboardStats() {
     new_users: users.filter(u=>new Date(u.created_at)>=today).length,
     blocked_users: users.filter(u=>u.status==='BLOCKED').length
   };
+}
+
+async function syncSharedUserFromDb(userId) {
+  if (!SHARED_STATE_ENABLED) return;
+  const u=db.prepare('SELECT * FROM users WHERE id=?').get(userId);
+  if (!u) return;
+  const session=db.prepare('SELECT id FROM user_sessions WHERE user_id=? AND revoked_at IS NULL ORDER BY created_at DESC LIMIT 1').get(userId);
+  await saveSharedUser({
+    id:u.id,full_name:u.full_name||'',status:u.status,access_state:u.access_state,
+    blocked_reason:u.blocked_reason||null,created_at:u.created_at,updated_at:u.updated_at,
+    online_until:u.online_until,last_activity:u.last_activity,current_page:u.current_page,
+    progress:u.progress,chat_status:u.chat_status,session_id:session?.id||null
+  });
 }
 
 function serveStatic(req,res,urlPath) {
@@ -374,7 +532,9 @@ async function handler(req,res) {
       const ctx=enforceUser(req,res); if(!ctx) return;
       db.prepare('UPDATE users SET online_until=?,last_activity=?,chat_status=?,updated_at=? WHERE id=?')
         .run(new Date(Date.now()+30000).toISOString(),now(),'ONLINE',now(),ctx.user.id);
-      const unread=db.prepare("SELECT COUNT(*) n FROM chat_messages WHERE user_id=? AND sender_type='ADMIN' AND status!='READ'").get(ctx.user.id).n; return json(res,200,{user:{id:ctx.user.id,full_name:ctx.user.full_name,status:ctx.user.status,access_state:ctx.user.access_state,current_page:ctx.user.current_page},session:{id:ctx.session.id,csrf_token:ctx.session.csrf_token},routes:Object.values(ROUTES),unread_messages:Number(unread||0)});
+      await syncSharedUserFromDb(ctx.user.id);
+      const freshUser=db.prepare('SELECT * FROM users WHERE id=?').get(ctx.user.id);
+      const unread=db.prepare("SELECT COUNT(*) n FROM chat_messages WHERE user_id=? AND sender_type='ADMIN' AND status!='READ'").get(ctx.user.id).n; return json(res,200,{user:{id:freshUser.id,full_name:freshUser.full_name,status:freshUser.status,access_state:freshUser.access_state,current_page:freshUser.current_page},session:{id:ctx.session.id,csrf_token:ctx.session.csrf_token},routes:Object.values(ROUTES),unread_messages:Number(unread||0)});
     }
 
     if (pathname==='/api/user/identity' && req.method==='POST') {
@@ -384,8 +544,11 @@ async function handler(req,res) {
       if(fullName.length<3) return json(res,422,{error:'INVALID_NAME'});
       const previous=ctx.user.full_name;
       db.prepare('UPDATE users SET full_name=?,updated_at=?,last_activity=? WHERE id=?').run(fullName,now(),now(),ctx.user.id);
+      const freshIdentityUser=db.prepare('SELECT * FROM users WHERE id=?').get(ctx.user.id);
+      issueUserAuth(res,freshIdentityUser,ctx.session);
       logActivity(ctx.user.id,ctx.session.id,'IDENTITY_UPDATED', previous ? 'Full name updated' : 'Full name set');
-      broadcastAdmins('user.updated',{user_id:ctx.user.id});
+      await syncSharedUserFromDb(ctx.user.id);
+      broadcastAdmins('user.updated',{user_id:ctx.user.id,full_name:fullName});
       return json(res,200,{id:ctx.user.id,full_name:fullName});
     }
 
@@ -398,6 +561,7 @@ async function handler(req,res) {
         .run(route.path,route.progress,until,t,'ONLINE',t,ctx.user.id);
       db.prepare('UPDATE user_sessions SET current_page=?,last_activity=? WHERE id=?').run(route.path,t,ctx.session.id);
       logActivity(ctx.user.id,ctx.session.id,'PAGE_VIEW',route.path);
+      await syncSharedUserFromDb(ctx.user.id);
       broadcastAdmins('presence.updated',{user_id:ctx.user.id,current_page:route.path,progress:route.progress});
       return json(res,200,{ok:true,current_page:route.path,progress:route.progress});
     }
@@ -422,6 +586,7 @@ async function handler(req,res) {
         .run(mid,ctx.user.id,'USER',ctx.user.id,msg,delivered?'DELIVERED':'SENT',t,delivered?t:null);
       db.prepare("UPDATE users SET chat_status='ONLINE',last_activity=?,updated_at=? WHERE id=?").run(t,t,ctx.user.id);
       logActivity(ctx.user.id,ctx.session.id,'CHAT_MESSAGE','User sent a chat message');
+      await syncSharedUserFromDb(ctx.user.id);
       const payload={id:mid,user_id:ctx.user.id,sender_type:'USER',sender_name:ctx.user.full_name||'Belum diidentifikasi',body:msg,status:delivered?'DELIVERED':'SENT',created_at:t};
       broadcastAdmins('chat.message',payload);
       return json(res,201,payload);
@@ -441,6 +606,7 @@ async function handler(req,res) {
       res.write('retry: 2000\n\n'); addStream(userStreams,ctx.user.id,res);
       db.prepare("UPDATE users SET online_until=?,chat_status='ONLINE',last_activity=?,updated_at=? WHERE id=?")
         .run(new Date(Date.now()+30000).toISOString(),now(),now(),ctx.user.id);
+      await syncSharedUserFromDb(ctx.user.id);
       broadcastAdmins('presence.updated',{user_id:ctx.user.id,online:true});
       sseWrite(res,'ready',{user_id:ctx.user.id});
       return;
@@ -453,22 +619,27 @@ async function handler(req,res) {
       const sid=id('as'), csrf=crypto.randomBytes(24).toString('base64url'), t=now();
       db.prepare('INSERT INTO admin_sessions(id,admin_id,csrf_token,created_at,last_activity) VALUES(?,?,?,?,?)').run(sid,a.id,csrf,t,t);
       setCookie(res,'kb_admin_sid',sid);
+      const authToken=signAdminAuth({
+        id:a.id,email:a.email,full_name:a.full_name,role:a.role,csrf,
+        iat:t,exp:Date.now()+(ADMIN_AUTH_TTL_SECONDS*1000)
+      });
+      setCookie(res,'kb_admin_auth',authToken,{maxAge:ADMIN_AUTH_TTL_SECONDS});
       return json(res,200,{admin:{id:a.id,email:a.email,full_name:a.full_name,role:a.role},csrf_token:csrf});
     }
 
     if (pathname==='/api/admin/me' && req.method==='GET') {
       const ctx=enforceAdmin(req,res); if(!ctx) return;
-      return json(res,200,{admin:ctx.admin,csrf_token:ctx.session.csrf_token,permissions:[...PERMISSIONS[ctx.admin.role]]});
+      return json(res,200,{admin:ctx.admin,csrf_token:ctx.session.csrf_token,permissions:[...PERMISSIONS[ctx.admin.role]],shared_state:SHARED_STATE_ENABLED});
     }
 
     if (pathname==='/api/admin/dashboard' && req.method==='GET') {
       const ctx=enforceAdmin(req,res,'monitor'); if(!ctx) return;
-      return json(res,200,{stats:dashboardStats()});
+      return json(res,200,{stats:await dashboardStats(),shared_state:SHARED_STATE_ENABLED});
     }
 
     if (pathname==='/api/admin/users' && req.method==='GET') {
       const ctx=enforceAdmin(req,res,'monitor'); if(!ctx) return;
-      return json(res,200,{users:currentUsers()});
+      return json(res,200,{users:await currentUsers(),shared_state:SHARED_STATE_ENABLED});
     }
 
     if (pathname==='/api/admin/routes' && req.method==='GET') {
@@ -482,7 +653,8 @@ async function handler(req,res) {
       const rows=db.prepare(`SELECT u.id,u.full_name,u.online_until,
         (SELECT COUNT(*) FROM chat_messages m WHERE m.user_id=u.id AND m.sender_type='USER' AND m.status!='READ') unread_messages
         FROM users u WHERE EXISTS(SELECT 1 FROM chat_messages m2 WHERE m2.user_id=u.id) ORDER BY u.last_activity DESC`).all();
-      return json(res,200,{users:rows.map(r=>{const online=!!r.online_until&&new Date(r.online_until).getTime()>nowMs;return {id:r.id,full_name:r.full_name||'Belum diidentifikasi',online,chat_status:online?'ONLINE':'OFFLINE',unread_messages:Number(r.unread_messages||0)}})});
+      const sharedNames=new Map((await loadSharedUsers()).map(x=>[x.id,x.full_name]));
+      return json(res,200,{users:rows.map(r=>{const online=!!r.online_until&&new Date(r.online_until).getTime()>nowMs;return {id:r.id,full_name:r.full_name||sharedNames.get(r.id)||'Belum diidentifikasi',online,chat_status:online?'ONLINE':'OFFLINE',unread_messages:Number(r.unread_messages||0)}})});
     }
 
     const navMatch=pathname.match(/^\/api\/admin\/users\/([^/]+)\/navigate$/);
@@ -535,12 +707,14 @@ async function handler(req,res) {
       const targetId=decodeURIComponent(adminChatMatch[1]);
       const target=db.prepare('SELECT id,full_name FROM users WHERE id=?').get(targetId);
       if(!target) return json(res,404,{error:'USER_NOT_FOUND'});
+      const sharedTarget=await loadSharedUser(targetId);
+      const canonicalTarget={...target,full_name:target.full_name||sharedTarget?.full_name||'Belum diidentifikasi'};
       db.prepare("UPDATE chat_messages SET status='READ',read_at=? WHERE user_id=? AND sender_type='USER' AND status!='READ'").run(now(),targetId);
       const rows=db.prepare(`SELECT m.*, CASE WHEN m.sender_type='USER' THEN u.full_name ELSE a.full_name END sender_name
         FROM chat_messages m JOIN users u ON u.id=m.user_id LEFT JOIN admins a ON a.id=m.sender_id AND m.sender_type='ADMIN'
         WHERE m.user_id=? ORDER BY m.created_at ASC LIMIT 500`).all(targetId);
       broadcastUser(targetId,'chat.read',{reader:'ADMIN'});
-      return json(res,200,{user:target,messages:rows.map(r=>({...r,sender_name:r.sender_name||'Unknown'}))});
+      return json(res,200,{user:canonicalTarget,messages:rows.map(r=>({...r,sender_name:r.sender_name||(r.sender_type==='USER'?canonicalTarget.full_name:'Customer Care')}))});
     }
     if(adminChatMatch && req.method==='POST') {
       const ctx=enforceAdmin(req,res,'chat'); if(!ctx) return;
