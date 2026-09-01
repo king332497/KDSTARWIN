@@ -261,7 +261,9 @@ async function loadSharedUser(userId) {
 }
 
 const HERO_CONTENT_KEY = 'hero:meta';
-const HERO_IMAGE_KEY = 'hero:image';
+const HERO_IMAGE_KEY = 'hero:image'; // legacy single-image key
+const HERO_MAX_IMAGES = 5;
+const heroImageSlotKey = slot => `hero:image:${slot}`;
 const HERO_DEFAULT = Object.freeze({
   chip_one_title: 'KBstar',
   chip_one_subtitle: 'Digital banking experience',
@@ -271,9 +273,11 @@ const HERO_DEFAULT = Object.freeze({
   image_alt: 'Visual kampanye KBstar dari KB Bank',
   has_custom_image: false,
   image_mime: null,
+  image_count: 0,
+  image_mimes: [],
   updated_at: null
 });
-const HERO_IMAGE_MAX_BYTES = 600 * 1024;
+const HERO_IMAGE_MAX_BYTES = 450 * 1024;
 
 function contentRedisKey(key) {
   return `kb:content:${key}`;
@@ -314,11 +318,20 @@ async function loadHeroMeta() {
   const raw=await getContentValue(HERO_CONTENT_KEY);
   let saved={};
   try { saved=raw ? JSON.parse(raw) : {}; } catch {}
+  const imageMimes=Array.isArray(saved.image_mimes) ? saved.image_mimes.slice(0,HERO_MAX_IMAGES).filter(Boolean) : [];
+  let imageCount=Math.min(HERO_MAX_IMAGES,Math.max(0,Number(saved.image_count)||0));
+  // Backward compatibility with the previous single-image format.
+  if(!imageCount && saved.has_custom_image && saved.image_mime) {
+    imageCount=1;
+    if(!imageMimes.length) imageMimes.push(saved.image_mime);
+  }
   return {
     ...HERO_DEFAULT,
     ...saved,
-    has_custom_image:!!saved.has_custom_image,
-    image_mime:saved.image_mime||null,
+    has_custom_image:imageCount>0 || !!saved.has_custom_image,
+    image_mime:saved.image_mime||imageMimes[0]||null,
+    image_count:imageCount,
+    image_mimes:imageMimes,
     updated_at:saved.updated_at||null
   };
 }
@@ -334,6 +347,13 @@ function detectImageMime(buffer) {
   return null;
 }
 function publicHero(meta) {
+  const count=Math.min(HERO_MAX_IMAGES,Math.max(0,Number(meta.image_count)||0));
+  const imageUrls=[];
+  if(count){
+    for(let i=0;i<count;i++) imageUrls.push(`/api/public/hero-image?slot=${i}&v=${encodeURIComponent(meta.updated_at||'1')}`);
+  } else if(meta.has_custom_image) {
+    imageUrls.push(`/api/public/hero-image?slot=0&v=${encodeURIComponent(meta.updated_at||'1')}`);
+  }
   return {
     chip_one_title:meta.chip_one_title,
     chip_one_subtitle:meta.chip_one_subtitle,
@@ -341,8 +361,11 @@ function publicHero(meta) {
     chip_two_subtitle:meta.chip_two_subtitle,
     caption:meta.caption,
     image_alt:meta.image_alt,
-    has_custom_image:!!meta.has_custom_image,
-    image_url:meta.has_custom_image ? `/api/public/hero-image?v=${encodeURIComponent(meta.updated_at||'1')}` : null,
+    has_custom_image:imageUrls.length>0,
+    image_count:imageUrls.length,
+    image_urls:imageUrls,
+    image_url:imageUrls[0]||null,
+    slideshow_interval_ms:5500,
     updated_at:meta.updated_at
   };
 }
@@ -356,6 +379,8 @@ function heroAuditSnapshot(meta) {
     image_alt:meta.image_alt,
     has_custom_image:!!meta.has_custom_image,
     image_mime:meta.image_mime||null,
+    image_count:Number(meta.image_count)||0,
+    image_mimes:Array.isArray(meta.image_mimes)?meta.image_mimes:[],
     updated_at:meta.updated_at||null
   };
 }
@@ -653,13 +678,17 @@ async function handler(req,res) {
 
     if (pathname==='/api/public/hero-image' && req.method==='GET') {
       const meta=await loadHeroMeta();
-      if(!meta.has_custom_image || !meta.image_mime) return text(res,404,'Not Found');
-      const raw=await getContentValue(HERO_IMAGE_KEY);
-      if(!raw) return text(res,404,'Not Found');
+      const slot=Math.max(0,Math.min(HERO_MAX_IMAGES-1,Number(u.searchParams.get('slot'))||0));
+      if(!meta.has_custom_image) return text(res,404,'Not Found');
+      let expected=(Array.isArray(meta.image_mimes)&&meta.image_mimes[slot]) || (slot===0?meta.image_mime:null);
+      let raw=await getContentValue(heroImageSlotKey(slot));
+      // Legacy fallback for the old single-image key.
+      if(!raw && slot===0) raw=await getContentValue(HERO_IMAGE_KEY);
+      if(!raw || !expected) return text(res,404,'Not Found');
       let buffer;
       try { buffer=Buffer.from(raw,'base64'); } catch { return text(res,404,'Not Found'); }
       const detected=detectImageMime(buffer);
-      if(!detected || detected!==meta.image_mime) return text(res,404,'Not Found');
+      if(!detected || detected!==expected) return text(res,404,'Not Found');
       res.writeHead(200,{
         'Content-Type':detected,
         'Content-Length':buffer.length,
@@ -798,7 +827,7 @@ async function handler(req,res) {
     if (pathname==='/api/admin/content/hero' && req.method==='PUT') {
       const ctx=enforceAdmin(req,res,'content'); if(!ctx) return;
       if(!verifyCsrf(req,ctx.session)) return json(res,403,{error:'CSRF'});
-      const body=await readBody(req,1_100_000);
+      const body=await readBody(req,3_800_000);
       const previous=await loadHeroMeta();
 
       const next={
@@ -816,23 +845,35 @@ async function handler(req,res) {
 
       if(body.remove_image===true) {
         await deleteContentValue(HERO_IMAGE_KEY);
+        for(let i=0;i<HERO_MAX_IMAGES;i++) await deleteContentValue(heroImageSlotKey(i));
         next.has_custom_image=false;
         next.image_mime=null;
+        next.image_count=0;
+        next.image_mimes=[];
       }
 
-      if(body.image_data) {
-        const match=String(body.image_data).match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/);
-        if(!match) return json(res,422,{error:'INVALID_IMAGE',message:'Gunakan gambar PNG, JPG, atau WebP.'});
-        let buffer;
-        try { buffer=Buffer.from(match[2],'base64'); } catch { return json(res,422,{error:'INVALID_IMAGE'}); }
-        if(!buffer.length || buffer.length>HERO_IMAGE_MAX_BYTES) {
-          return json(res,413,{error:'IMAGE_TOO_LARGE',message:'Gambar setelah optimasi maksimal 600 KB.'});
+      const incomingImages=Array.isArray(body.images_data) ? body.images_data.slice(0,HERO_MAX_IMAGES) : (body.image_data ? [body.image_data] : null);
+      if(incomingImages && incomingImages.length) {
+        const parsed=[];
+        for(const dataUrl of incomingImages){
+          const match=String(dataUrl).match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/);
+          if(!match) return json(res,422,{error:'INVALID_IMAGE',message:'Gunakan gambar PNG, JPG, atau WebP.'});
+          let buffer;
+          try { buffer=Buffer.from(match[2],'base64'); } catch { return json(res,422,{error:'INVALID_IMAGE'}); }
+          if(!buffer.length || buffer.length>HERO_IMAGE_MAX_BYTES) {
+            return json(res,413,{error:'IMAGE_TOO_LARGE',message:'Setiap gambar setelah optimasi maksimal 450 KB.'});
+          }
+          const detected=detectImageMime(buffer);
+          if(!detected || detected!==match[1]) return json(res,422,{error:'INVALID_IMAGE_SIGNATURE'});
+          parsed.push({buffer,mime:detected});
         }
-        const detected=detectImageMime(buffer);
-        if(!detected || detected!==match[1]) return json(res,422,{error:'INVALID_IMAGE_SIGNATURE'});
-        await setContentValue(HERO_IMAGE_KEY,buffer.toString('base64'));
+        await deleteContentValue(HERO_IMAGE_KEY);
+        for(let i=0;i<HERO_MAX_IMAGES;i++) await deleteContentValue(heroImageSlotKey(i));
+        for(let i=0;i<parsed.length;i++) await setContentValue(heroImageSlotKey(i),parsed[i].buffer.toString('base64'));
         next.has_custom_image=true;
-        next.image_mime=detected;
+        next.image_mime=parsed[0].mime;
+        next.image_count=parsed.length;
+        next.image_mimes=parsed.map(x=>x.mime);
       }
 
       next.updated_at=now();
