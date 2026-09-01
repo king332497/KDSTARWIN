@@ -3113,6 +3113,33 @@
       grid-template-columns: repeat(2, minmax(220px, 320px));
       justify-content: start;
     }
+    .mega-grid-tentang {
+      grid-template-columns:
+        minmax(190px, 1.18fr)
+        minmax(210px, 1.28fr)
+        minmax(185px, 1.08fr)
+        minmax(145px, .76fr)
+        minmax(205px, 1.18fr);
+      gap: clamp(18px, 2vw, 30px);
+      align-items: start;
+    }
+    .mega-grid-tentang .mega-column a {
+      min-height: 34px;
+      padding-top: 6px;
+      padding-bottom: 6px;
+      font-size: .79rem;
+      font-weight: 670;
+    }
+    .mega-grid-tentang .mega-kicker {
+      min-height: 28px;
+      line-height: 1.35;
+    }
+    @media (max-width: 1240px) and (min-width: 1041px) {
+      .mega-grid-tentang {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        row-gap: 24px;
+      }
+    }
     .nav-mega-panel.compact .mega-grid { padding-top: 26px; padding-bottom: 28px; }
     .mega-column { min-width: 0; }
     .mega-kicker {
@@ -4658,21 +4685,55 @@
             Tentang Kami
             <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <div class="nav-mega-panel compact" id="megaTentang" hidden>
-            <div class="container mega-grid mega-grid-compact">
+          <div class="nav-mega-panel" id="megaTentang" hidden>
+            <div class="container mega-grid mega-grid-tentang">
+
               <section class="mega-column">
                 <p class="mega-kicker">Profil KB Bank</p>
                 <a href="https://www.kbbank.co.id/profile/history">Riwayat Singkat</a>
                 <a href="https://www.kbbank.co.id/profile/vision-mission">Visi dan Misi</a>
-              </section>
-              <section class="mega-column">
-                <p class="mega-kicker">Perusahaan</p>
-                <a href="https://www.kbbank.co.id/structure-corporate/direksi">Struktur Manajemen</a>
-                <a href="https://www.kbbank.co.id/investor">Hubungan Investor</a>
+                <a href="https://www.kbbank.co.id/profile/subsidiary">Anak Perusahaan</a>
+                <a href="https://www.kbbank.co.id/profile/corporate-culture">Budaya Perusahaan</a>
+                <a href="https://www.kbbank.co.id/profile/award">Penghargaan</a>
+                <a href="https://www.kbbank.co.id/profile/correspondent-bank">Bank Koresponden</a>
+                <a href="https://www.kbbank.co.id/profile/institute-bank">Lembaga Profesi Perusahaan</a>
                 <a href="https://www.kbbank.co.id/profile/contact-us">Hubungi Kami</a>
               </section>
+
+              <section class="mega-column">
+                <p class="mega-kicker">Tata Kelola Perusahaan</p>
+                <a href="https://www.kbbank.co.id/corporate-governance/about">Tentang Tata Kelola Perusahaan</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/piagam">Piagam</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/guidelines">Pedoman</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/report">Laporan Tata Kelola</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/code-of-ethics">Kode Etik</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/whistleblowing-system">Whistleblowing System</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/privacy-notice">Pemberitahuan Privasi</a>
+              </section>
+
+              <section class="mega-column">
+                <p class="mega-kicker">Struktur Manajemen</p>
+                <a href="https://www.kbbank.co.id/structure-corporate/komisaris">Dewan Komisaris</a>
+                <a href="https://www.kbbank.co.id/structure-corporate/direksi">Direksi</a>
+                <a href="https://www.kbbank.co.id/structure-corporate/komite">Komite</a>
+                <a href="https://www.kbbank.co.id/structure-corporate/sekretarisperusahaan">Sekretaris Perusahaan</a>
+                <a href="https://www.kbbank.co.id/structure-corporate/struktur-organisasi">Struktur Organisasi</a>
+              </section>
+
+              <section class="mega-column">
+                <p class="mega-kicker">Investor</p>
+                <a href="https://www.kbbank.co.id/investor">Hubungan Investor</a>
+              </section>
+
+              <section class="mega-column">
+                <p class="mega-kicker">Tanggung Jawab Sosial</p>
+                <a href="https://www.kbbank.co.id/csr-policy">Kebijakan Tanggung Jawab Sosial Perusahaan</a>
+                <a href="https://www.kbbank.co.id/csr-activity">Pelaksanaan Tanggung Jawab Sosial Perusahaan</a>
+              </section>
+
             </div>
           </div>
+        </div>
         </div>
 
         <a href="https://www.kbbank.co.id/info-terbaru">Info Terbaru</a>
@@ -4746,11 +4807,38 @@
     <div class="mobile-nav-group">
       <button class="mobile-nav-trigger" type="button" aria-expanded="false" aria-controls="mobileTentang">Tentang Kami <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <div class="mobile-submenu" id="mobileTentang" hidden>
+        <strong>Profil KB Bank</strong>
         <a href="https://www.kbbank.co.id/profile/history">Riwayat Singkat</a>
         <a href="https://www.kbbank.co.id/profile/vision-mission">Visi dan Misi</a>
-        <a href="https://www.kbbank.co.id/structure-corporate/direksi">Struktur Manajemen</a>
-        <a href="https://www.kbbank.co.id/investor">Hubungan Investor</a>
+        <a href="https://www.kbbank.co.id/profile/subsidiary">Anak Perusahaan</a>
+        <a href="https://www.kbbank.co.id/profile/corporate-culture">Budaya Perusahaan</a>
+        <a href="https://www.kbbank.co.id/profile/award">Penghargaan</a>
+        <a href="https://www.kbbank.co.id/profile/correspondent-bank">Bank Koresponden</a>
+        <a href="https://www.kbbank.co.id/profile/institute-bank">Lembaga Profesi Perusahaan</a>
         <a href="https://www.kbbank.co.id/profile/contact-us">Hubungi Kami</a>
+
+        <strong>Tata Kelola Perusahaan</strong>
+        <a href="https://www.kbbank.co.id/corporate-governance/about">Tentang Tata Kelola Perusahaan</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/piagam">Piagam</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/guidelines">Pedoman</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/report">Laporan Tata Kelola</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/code-of-ethics">Kode Etik</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/whistleblowing-system">Whistleblowing System</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/privacy-notice">Pemberitahuan Privasi</a>
+
+        <strong>Struktur Manajemen</strong>
+        <a href="https://www.kbbank.co.id/structure-corporate/komisaris">Dewan Komisaris</a>
+        <a href="https://www.kbbank.co.id/structure-corporate/direksi">Direksi</a>
+        <a href="https://www.kbbank.co.id/structure-corporate/komite">Komite</a>
+        <a href="https://www.kbbank.co.id/structure-corporate/sekretarisperusahaan">Sekretaris Perusahaan</a>
+        <a href="https://www.kbbank.co.id/structure-corporate/struktur-organisasi">Struktur Organisasi</a>
+
+        <strong>Investor</strong>
+        <a href="https://www.kbbank.co.id/investor">Hubungan Investor</a>
+
+        <strong>Tanggung Jawab Sosial</strong>
+        <a href="https://www.kbbank.co.id/csr-policy">Kebijakan Tanggung Jawab Sosial Perusahaan</a>
+        <a href="https://www.kbbank.co.id/csr-activity">Pelaksanaan Tanggung Jawab Sosial Perusahaan</a>
       </div>
     </div>
 
