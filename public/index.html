@@ -3113,33 +3113,6 @@
       grid-template-columns: repeat(2, minmax(220px, 320px));
       justify-content: start;
     }
-    .mega-grid-tentang {
-      grid-template-columns:
-        minmax(190px, 1.18fr)
-        minmax(210px, 1.28fr)
-        minmax(185px, 1.08fr)
-        minmax(145px, .76fr)
-        minmax(205px, 1.18fr);
-      gap: clamp(18px, 2vw, 30px);
-      align-items: start;
-    }
-    .mega-grid-tentang .mega-column a {
-      min-height: 34px;
-      padding-top: 6px;
-      padding-bottom: 6px;
-      font-size: .79rem;
-      font-weight: 670;
-    }
-    .mega-grid-tentang .mega-kicker {
-      min-height: 28px;
-      line-height: 1.35;
-    }
-    @media (max-width: 1240px) and (min-width: 1041px) {
-      .mega-grid-tentang {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        row-gap: 24px;
-      }
-    }
     .nav-mega-panel.compact .mega-grid { padding-top: 26px; padding-bottom: 28px; }
     .mega-column { min-width: 0; }
     .mega-kicker {
@@ -4633,6 +4606,50 @@
     }
   </style>
 
+
+  <style id="kbTentangMenuFixStyles">
+    .mega-grid-tentang {
+      grid-template-columns:
+        minmax(190px, 1.05fr)
+        minmax(215px, 1.16fr)
+        minmax(190px, 1fr)
+        minmax(220px, 1.12fr);
+      gap: clamp(22px, 2.4vw, 38px);
+      align-items: start;
+    }
+
+    .kb-tentang-panel .mega-grid {
+      padding-top: 28px;
+      padding-bottom: 30px;
+    }
+
+    .kb-tentang-panel .mega-column a {
+      min-height: 32px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      font-size: .78rem;
+    }
+
+    .kb-tentang-panel .mega-kicker {
+      margin-bottom: 10px;
+    }
+
+    .kb-mega-kicker-secondary {
+      margin-top: 22px !important;
+    }
+
+    @media (max-width: 1200px) and (min-width: 1041px) {
+      .mega-grid-tentang {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .kb-tentang-panel .mega-column a {
+        font-size: .72rem;
+      }
+    }
+  </style>
+
 </head>
 <body>
   <a class="skip-link" href="#content">Lewati ke konten</a>
@@ -4685,9 +4702,8 @@
             Tentang Kami
             <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
-          <div class="nav-mega-panel" id="megaTentang" hidden>
+          <div class="nav-mega-panel compact kb-tentang-panel" id="megaTentang" hidden>
             <div class="container mega-grid mega-grid-tentang">
-
               <section class="mega-column">
                 <p class="mega-kicker">Profil KB Bank</p>
                 <a href="https://www.kbbank.co.id/profile/history">Riwayat Singkat</a>
@@ -4723,17 +4739,13 @@
               <section class="mega-column">
                 <p class="mega-kicker">Investor</p>
                 <a href="https://www.kbbank.co.id/investor">Hubungan Investor</a>
-              </section>
 
-              <section class="mega-column">
-                <p class="mega-kicker">Tanggung Jawab Sosial</p>
+                <p class="mega-kicker kb-mega-kicker-secondary">Tanggung Jawab Sosial</p>
                 <a href="https://www.kbbank.co.id/csr-policy">Kebijakan Tanggung Jawab Sosial Perusahaan</a>
                 <a href="https://www.kbbank.co.id/csr-activity">Pelaksanaan Tanggung Jawab Sosial Perusahaan</a>
               </section>
-
             </div>
           </div>
-        </div>
         </div>
 
         <a href="https://www.kbbank.co.id/info-terbaru">Info Terbaru</a>
