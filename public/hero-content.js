@@ -6,9 +6,17 @@
   let slideTimer = null;
   let slideIndex = 0;
   let currentUrls = [];
+  let slideshowVersion = 0;
+
+  const FALLBACK_SLIDES = [
+    '/assets/hero/kbstar-pinjaman-digital.png',
+    '/assets/hero/kbstar-pinjaman-berhasil.png',
+    '/assets/hero/kb-bank-lps.png'
+  ];
 
   const nodes = () => ({
     root: $('.hero-campaign-v6'),
+    card: $('.hero-campaign-v6 .campaign-card-v6'),
     image: $('.hero-campaign-v6 .campaign-card-v6 img'),
     chipOneTitle: $('.hero-campaign-v6 .campaign-chip-v6.one strong'),
     chipOneSubtitle: $('.hero-campaign-v6 .campaign-chip-v6.one small'),
@@ -74,6 +82,7 @@
         background: transparent !important;
         backface-visibility: visible !important;
         transform: none !important;
+        opacity: 1;
       }
 
       @media (max-width: 620px) {
@@ -92,6 +101,71 @@
     el.hidden = value.trim() === '';
   };
 
+  const ensureHeroImage = (n) => {
+    if (n.image) return n.image;
+    if (!n.card) return null;
+
+    const image = document.createElement('img');
+    image.alt = 'Informasi layanan KB Bank';
+    image.decoding = 'async';
+    image.fetchPriority = 'high';
+    n.card.appendChild(image);
+    return image;
+  };
+
+  const uniqueUrls = (urls) => [...new Set(urls.filter(Boolean))];
+
+  const startSlideshow = (image, urls, imageAlt, intervalMs = 5500) => {
+    if (!image) return;
+
+    const version = ++slideshowVersion;
+    clearInterval(slideTimer);
+    slideTimer = null;
+    slideIndex = 0;
+    currentUrls = uniqueUrls(urls.length ? urls : FALLBACK_SLIDES);
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const transitionDuration = reduceMotion ? 0 : 210;
+
+    const showSlide = (index) => {
+      if (!currentUrls.length) return;
+
+      slideIndex = index % currentUrls.length;
+      const requestedUrl = currentUrls[slideIndex];
+      const localFallback = FALLBACK_SLIDES[slideIndex % FALLBACK_SLIDES.length];
+      const preload = new Image();
+      preload.decoding = 'async';
+
+      const commit = (url) => {
+        if (version !== slideshowVersion) return;
+        image.style.transition = reduceMotion ? 'none' : 'opacity .38s ease';
+        if (!reduceMotion) image.style.opacity = '0';
+
+        window.setTimeout(() => {
+          if (version !== slideshowVersion) return;
+          image.src = url;
+          image.alt = imageAlt || 'Informasi layanan KB Bank';
+          image.style.opacity = '1';
+        }, transitionDuration);
+      };
+
+      preload.onload = () => commit(requestedUrl);
+      preload.onerror = () => {
+        if (version !== slideshowVersion || requestedUrl === localFallback) return;
+        startSlideshow(image, FALLBACK_SLIDES, imageAlt, intervalMs);
+      };
+      preload.src = requestedUrl;
+    };
+
+    showSlide(0);
+    if (currentUrls.length > 1 && !reduceMotion) {
+      slideTimer = window.setInterval(
+        () => showSlide((slideIndex + 1) % currentUrls.length),
+        Math.max(3500, Number(intervalMs) || 5500)
+      );
+    }
+  };
+
 
   installHeroStaticFit();
 
@@ -99,6 +173,9 @@
     if (applying) return;
     const n = nodes();
     if (!n.root) return;
+
+    const image = ensureHeroImage(n);
+    startSlideshow(image, FALLBACK_SLIDES, 'Informasi layanan KB Bank');
 
     applying = true;
     try {
@@ -118,35 +195,11 @@
       setText(n.chipTwoSubtitle, hero.chip_two_subtitle);
       setText(n.caption, hero.caption);
 
-      if (n.image && hero.image_alt) n.image.alt = hero.image_alt;
+      const apiUrls = Array.isArray(hero.image_urls) && hero.image_urls.length
+        ? hero.image_urls
+        : (hero.image_url ? [hero.image_url] : []);
 
-      if (n.image) {
-        clearInterval(slideTimer); slideTimer=null; slideIndex=0;
-        currentUrls=(Array.isArray(hero.image_urls)&&hero.image_urls.length ? hero.image_urls : (hero.image_url?[hero.image_url]:[])).filter(Boolean);
-        const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const showSlide = index => {
-          if(!currentUrls.length) return;
-          slideIndex=index%currentUrls.length;
-          const url=currentUrls[slideIndex];
-          const preload=new Image(); preload.decoding='async';
-          preload.onload=()=>{
-            n.image.style.transition=reduceMotion?'none':'opacity .38s ease';
-            if(!reduceMotion){ n.image.style.opacity='0'; }
-            setTimeout(()=>{
-              n.image.src=url; n.image.alt=hero.image_alt||n.image.alt;
-              n.image.style.opacity='1';
-            },reduceMotion?0:210);
-          };
-          preload.src=url;
-        };
-        if(currentUrls.length){
-          showSlide(0);
-          if(currentUrls.length>1 && !reduceMotion){
-            const interval=Math.max(3500,Number(hero.slideshow_interval_ms)||5500);
-            slideTimer=setInterval(()=>showSlide((slideIndex+1)%currentUrls.length),interval);
-          }
-        }
-      }
+      startSlideshow(image, apiUrls, hero.image_alt, hero.slideshow_interval_ms);
     } catch {
       // Keep the built-in visual untouched when the content service is unavailable.
     } finally {
