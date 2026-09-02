@@ -47,6 +47,9 @@
         transform: none !important;
         aspect-ratio: 4 / 5 !important;
         overflow: hidden !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
       }
 
       .hero-campaign-v6 .campaign-chip-v6,
@@ -63,10 +66,12 @@
         height: 100% !important;
         max-width: 100% !important;
         max-height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
         aspect-ratio: auto !important;
-        object-fit: contain !important;
+        object-fit: cover !important;
         object-position: center center !important;
-        background: #fff !important;
+        background: transparent !important;
         backface-visibility: visible !important;
         transform: none !important;
       }
@@ -135,9 +140,6 @@
           preload.src=url;
         };
         if(currentUrls.length){
-          const card = n.image.closest('.campaign-card-v6');
-          if (card) card.hidden = false;
-          n.image.hidden = false;
           showSlide(0);
           if(currentUrls.length>1 && !reduceMotion){
             const interval=Math.max(3500,Number(hero.slideshow_interval_ms)||5500);
@@ -146,7 +148,7 @@
         }
       }
     } catch {
-      // No legacy fallback image: leave the dynamic Hero stage empty.
+      // Keep the built-in visual untouched when the content service is unavailable.
     } finally {
       applying = false;
     }
