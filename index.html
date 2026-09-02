@@ -1,0 +1,5555 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#FFCB05">
+  <title>KB Bank — Pinjaman Digital</title>
+  <meta name="description" content="Halaman awal pinjaman digital dengan karakter KB Bank corporate dan visual KBstar.">
+  <style>
+    :root {
+      --kb-yellow: #ffcb05;
+      --kb-yellow-strong: #f2b900;
+      --kb-yellow-soft: #fff6cf;
+      --kb-purple: #7426c9;
+      --kb-purple-deep: #55208e;
+      --ink: #17171a;
+      --ink-soft: #2d2d32;
+      --muted: #6c6c74;
+      --line: rgba(23,23,26,.09);
+      --surface: #ffffff;
+      --surface-warm: #fffdf7;
+      --radius-sm: 14px;
+      --radius-md: 20px;
+      --radius-lg: 28px;
+      --shadow-sm: 0 10px 30px rgba(24,24,28,.08);
+      --shadow-md: 0 18px 55px rgba(33,23,44,.12);
+      --shadow-lg: 0 36px 90px rgba(58,33,79,.16);
+      --container: 1220px;
+      --header-h: 78px;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--surface-warm);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    img { display: block; max-width: 100%; }
+
+    .container {
+      width: min(calc(100% - 40px), var(--container));
+      margin-inline: auto;
+    }
+
+    .skip-link {
+      position: fixed;
+      left: 12px;
+      top: 12px;
+      z-index: 999;
+      transform: translateY(-160%);
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #111;
+      color: #fff;
+    }
+    .skip-link:focus { transform: translateY(0); }
+
+    :focus-visible {
+      outline: 3px solid rgba(116,38,201,.35);
+      outline-offset: 4px;
+      border-radius: 10px;
+    }
+
+    /* Header */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-bottom: 1px solid rgba(23,23,26,.06);
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(18px) saturate(150%);
+    }
+
+    .nav {
+      min-height: var(--header-h);
+      display: flex;
+      align-items: center;
+      gap: 30px;
+    }
+
+    .brand {
+      display: inline-flex;
+      flex-direction: column;
+      line-height: 1;
+      min-width: max-content;
+    }
+    .brand strong {
+      font-size: 1.38rem;
+      letter-spacing: -.045em;
+      font-weight: 820;
+    }
+    .brand span {
+      margin-top: 6px;
+      font-size: .66rem;
+      letter-spacing: .19em;
+      text-transform: uppercase;
+      color: #7b7b82;
+      font-weight: 700;
+    }
+
+    .brand-line {
+      width: 35px;
+      height: 4px;
+      margin-bottom: 8px;
+      border-radius: 999px;
+      background: var(--kb-yellow);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 24px;
+      margin-left: auto;
+      font-size: .82rem;
+      font-weight: 700;
+      color: #34343a;
+      white-space: nowrap;
+    }
+    .nav-links a,
+    .nav-links .nav-item-static {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 44px;
+      padding: 10px 0;
+      color: inherit;
+      cursor: default;
+    }
+    .nav-links a::after,
+    .nav-links .nav-item-static::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 100%;
+      bottom: 4px;
+      height: 2px;
+      border-radius: 999px;
+      background: var(--kb-yellow-strong);
+      transition: right .25s var(--ease);
+    }
+    .nav-links a:hover::after { right: 0; }
+    .nav-chevron {
+      width: 12px;
+      height: 12px;
+      flex: 0 0 auto;
+      transition: transform .2s var(--ease);
+    }
+    .nav-links .nav-item-static:hover .nav-chevron { transform: translateY(1px); }
+
+    .menu-toggle {
+      display: none;
+      width: 46px;
+      height: 46px;
+      margin-left: auto;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #fff;
+      cursor: pointer;
+      color: var(--ink);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      z-index: 99;
+      top: calc(var(--header-h) + 8px);
+      left: 14px;
+      right: 14px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255,255,255,.98);
+      box-shadow: var(--shadow-md);
+    }
+    .mobile-menu.is-open { display: grid; }
+    .mobile-menu a,
+    .mobile-menu .mobile-nav-static {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 12px;
+      font-weight: 750;
+    }
+    .mobile-menu a:hover { background: var(--kb-yellow-soft); }
+    .mobile-nav-static { color: #38383d; }
+    .mobile-nav-static .nav-chevron { width: 14px; height: 14px; }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        radial-gradient(circle at 44% 38%, rgba(255,203,5,.08), transparent 30%),
+        linear-gradient(180deg, #fff 0%, #fffdf7 70%, #fff8df 100%);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 720px;
+      height: 720px;
+      right: -360px;
+      top: -280px;
+      z-index: -3;
+      border-radius: 50%;
+      background: rgba(116,38,201,.055);
+      filter: blur(1px);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      left: 44%;
+      top: 76px;
+      width: 340px;
+      height: 340px;
+      z-index: -3;
+      opacity: .45;
+      background-image: radial-gradient(rgba(245,190,0,.9) 1px, transparent 1px);
+      background-size: 15px 15px;
+      mask-image: linear-gradient(90deg, transparent, #000 25%, #000 70%, transparent);
+    }
+
+    .hero-grid {
+      min-height: 635px;
+      display: grid;
+      grid-template-columns: 1.02fr .98fr;
+      gap: 58px;
+      align-items: center;
+      padding: 72px 0 62px;
+    }
+
+    .hero-copy {
+      max-width: 650px;
+      position: relative;
+      z-index: 3;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: var(--kb-yellow-soft);
+      color: #2b2600;
+      font-size: .75rem;
+      font-weight: 820;
+      letter-spacing: .13em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--kb-yellow-strong);
+      box-shadow: 0 0 0 5px rgba(242,185,0,.13);
+    }
+
+    h1 {
+      margin: 24px 0 0;
+      max-width: 680px;
+      font-size: clamp(3.35rem, 5.6vw, 5.7rem);
+      line-height: .98;
+      letter-spacing: -.055em;
+      font-weight: 790;
+    }
+
+    .accent {
+      position: relative;
+      display: inline-block;
+      color: var(--kb-yellow-strong);
+    }
+    .accent::after {
+      content: "";
+      position: absolute;
+      left: 1%;
+      right: 0;
+      bottom: -8px;
+      height: 5px;
+      border-radius: 999px;
+      background: var(--kb-yellow);
+    }
+
+    .hero-lead {
+      max-width: 590px;
+      margin: 30px 0 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.4vw, 1.12rem);
+      line-height: 1.72;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 32px;
+    }
+
+    .btn {
+      min-height: 54px;
+      padding: 0 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 11px;
+      border-radius: 15px;
+      border: 1px solid transparent;
+      font-size: .94rem;
+      font-weight: 800;
+      transition: transform .22s var(--ease), box-shadow .22s var(--ease), background .22s var(--ease), border-color .22s var(--ease);
+    }
+    .btn:hover { transform: translateY(-2px); }
+    .btn-primary {
+      background: var(--kb-yellow);
+      color: #191600;
+      box-shadow: 0 14px 34px rgba(205,163,0,.2);
+    }
+    .btn-primary:hover {
+      background: #ffd52d;
+      box-shadow: 0 18px 38px rgba(205,163,0,.27);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,.9);
+      border-color: var(--line);
+      color: var(--ink-soft);
+      box-shadow: 0 9px 26px rgba(25,25,30,.06);
+    }
+    .btn-secondary:hover { border-color: rgba(116,38,201,.18); }
+
+    .trust-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px 22px;
+      margin-top: 28px;
+    }
+    .trust-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #4f4f56;
+      font-size: .8rem;
+      font-weight: 680;
+    }
+    .trust-icon {
+      width: 24px;
+      height: 24px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: var(--kb-yellow);
+      color: #2b2500;
+      font-size: .75rem;
+      font-weight: 900;
+    }
+
+    /* Showcase */
+    .hero-visual {
+      position: relative;
+      min-height: 520px;
+      display: grid;
+      place-items: center;
+    }
+
+    .showcase-glow {
+      position: absolute;
+      width: 520px;
+      height: 360px;
+      border-radius: 50%;
+      background: rgba(116,38,201,.12);
+      filter: blur(70px);
+      transform: translate(18px, 20px);
+      pointer-events: none;
+    }
+
+    .showcase {
+      position: relative;
+      width: min(520px, 94%);
+      aspect-ratio: 620 / 413;
+      border-radius: 30px;
+      padding: 8px;
+      background: rgba(255,255,255,.86);
+      border: 1px solid rgba(255,255,255,.92);
+      box-shadow: var(--shadow-lg);
+      animation: visualFloat 7s ease-in-out infinite;
+    }
+
+    .showcase::before {
+      content: "";
+      position: absolute;
+      inset: -18px 32px 40% -22px;
+      z-index: -1;
+      border-radius: 34px 64px 30px 50px;
+      background: var(--kb-yellow);
+      opacity: .92;
+      transform: rotate(-4deg);
+    }
+
+    .showcase img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 23px;
+    }
+
+    .float-card {
+      position: absolute;
+      z-index: 8;
+      min-width: 190px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,.85);
+      border-radius: 18px;
+      background: rgba(255,255,255,.94);
+      box-shadow: 0 18px 45px rgba(33,24,43,.14);
+      backdrop-filter: blur(12px);
+      animation: cardFloat 5.5s ease-in-out infinite;
+    }
+
+    .float-card .num {
+      flex: 0 0 auto;
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--kb-yellow);
+      color: #2d2600;
+      font-weight: 900;
+      font-size: .85rem;
+    }
+    .float-card strong {
+      display: block;
+      font-size: .82rem;
+      line-height: 1.2;
+    }
+    .float-card small {
+      display: block;
+      margin-top: 4px;
+      color: #7a7a82;
+      font-size: .68rem;
+      font-weight: 620;
+    }
+
+    .card-a { left: -42px; top: 16%; }
+    .card-b {
+      right: -40px;
+      bottom: 13%;
+      animation-delay: -1.6s;
+    }
+    .card-b .num {
+      background: var(--kb-purple);
+      color: #fff;
+    }
+
+    .visual-caption {
+      position: absolute;
+      left: 24px;
+      bottom: 21px;
+      z-index: 9;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(25,18,31,.76);
+      color: white;
+      font-size: .72rem;
+      font-weight: 750;
+      backdrop-filter: blur(8px);
+    }
+    .visual-caption::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--kb-yellow);
+    }
+
+    /* Process */
+    .process-wrap {
+      position: relative;
+      z-index: 10;
+      margin-top: -18px;
+      padding-bottom: 34px;
+    }
+    .process-panel {
+      display: grid;
+      grid-template-columns: 1.18fr repeat(3, 1fr);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 20px 60px rgba(24,24,28,.08);
+    }
+    .process-intro {
+      padding: 28px 28px 30px;
+      background: #171719;
+      color: #fff;
+    }
+    .process-intro span {
+      display: block;
+      margin-bottom: 13px;
+      color: var(--kb-yellow);
+      font-size: .72rem;
+      font-weight: 850;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .process-intro strong {
+      display: block;
+      max-width: 240px;
+      font-size: 1.2rem;
+      line-height: 1.42;
+    }
+    .process-intro::after {
+      content: "";
+      display: block;
+      width: 82%;
+      height: 1px;
+      margin-top: 25px;
+      background: linear-gradient(90deg, var(--kb-yellow), transparent);
+    }
+
+    .process-card {
+      padding: 27px 25px;
+      border-left: 1px solid var(--line);
+      transition: background .22s var(--ease), transform .22s var(--ease);
+    }
+    .process-card:hover {
+      background: #fffdf3;
+    }
+    .process-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .step {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: var(--kb-yellow);
+      color: #2a2500;
+      font-size: .84rem;
+      font-weight: 900;
+    }
+    .step-icon {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+    }
+    .process-card strong {
+      display: block;
+      margin-bottom: 7px;
+      font-size: .93rem;
+    }
+    .process-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .79rem;
+      line-height: 1.58;
+    }
+
+
+    /* Loan products */
+    .loan-products {
+      padding: 52px 0 58px;
+      background: #fff;
+      border-top: 1px solid rgba(23,23,26,.05);
+    }
+
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #7a6500;
+      font-size: .72rem;
+      font-weight: 850;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .section-kicker::before {
+      content: "";
+      width: 24px;
+      height: 3px;
+      border-radius: 999px;
+      background: var(--kb-yellow);
+    }
+
+    .section-title {
+      margin: 9px 0 0;
+      font-size: clamp(2rem, 3.4vw, 3.15rem);
+      line-height: 1.08;
+      letter-spacing: -.045em;
+      font-weight: 780;
+    }
+
+    .section-copy {
+      max-width: 470px;
+      margin: 0;
+      color: var(--muted);
+      font-size: .94rem;
+      line-height: 1.65;
+    }
+
+    .loan-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .loan-card {
+      position: relative;
+      overflow: hidden;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(24,24,28,.055);
+      transition:
+        transform .24s var(--ease),
+        box-shadow .24s var(--ease),
+        border-color .24s var(--ease);
+    }
+
+    .loan-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(242,185,0,.22);
+      box-shadow: 0 20px 45px rgba(24,24,28,.09);
+    }
+
+    .loan-media {
+      position: relative;
+      aspect-ratio: 16 / 7.3;
+      overflow: hidden;
+      background: #f1f1f1;
+    }
+
+    .loan-media::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, transparent 38%, rgba(20,20,22,.24) 100%);
+      pointer-events: none;
+    }
+
+    .loan-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform .5s var(--ease);
+    }
+
+    .loan-card:hover .loan-media img {
+      transform: scale(1.035);
+    }
+
+    .loan-body {
+      position: relative;
+      min-height: 150px;
+      padding: 22px 22px 20px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(255,203,5,.09), transparent 38%),
+        #fff;
+    }
+
+    .loan-body::after {
+      content: "";
+      position: absolute;
+      width: 92px;
+      height: 92px;
+      right: -34px;
+      top: -18px;
+      border-radius: 20px;
+      border: 12px solid rgba(255,203,5,.075);
+      transform: rotate(45deg);
+      pointer-events: none;
+    }
+
+    .loan-label {
+      position: relative;
+      z-index: 2;
+      display: inline-flex;
+      min-height: 26px;
+      align-items: center;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: var(--kb-yellow-soft);
+      color: #665400;
+      font-size: .66rem;
+      font-weight: 820;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .loan-card h3 {
+      position: relative;
+      z-index: 2;
+      margin: 13px 0 0;
+      max-width: 86%;
+      font-size: 1.05rem;
+      line-height: 1.36;
+      letter-spacing: -.018em;
+    }
+
+    .loan-more {
+      position: relative;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 20px;
+      color: #57575e;
+      font-size: .76rem;
+      font-weight: 760;
+    }
+
+    .loan-more span {
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--kb-yellow);
+      color: #2c2500;
+      transition: transform .22s var(--ease);
+    }
+
+    .loan-card:hover .loan-more span {
+      transform: translateX(2px);
+    }
+
+    .loan-source-note {
+      margin: 18px 0 0;
+      color: #83838a;
+      font-size: .7rem;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 960px) {
+      .loan-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .section-head { align-items: start; flex-direction: column; }
+      .section-copy { max-width: 650px; }
+    }
+
+    @media (max-width: 620px) {
+      .loan-products { padding: 42px 0 46px; }
+      .loan-grid { grid-template-columns: 1fr; gap: 14px; }
+      .loan-card { border-radius: 19px; }
+      .loan-body { min-height: 132px; padding: 19px; }
+      .loan-card h3 { max-width: 90%; font-size: 1rem; }
+      .loan-media { aspect-ratio: 16 / 7.8; }
+    }
+
+
+    /* Info strip */
+    .info-strip {
+      padding: 0 0 52px;
+    }
+    .info-strip-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      border: 1px solid rgba(225,189,0,.12);
+      border-radius: 22px;
+      background: linear-gradient(90deg, #fff8df 0%, #fffdf7 45%, #fff8df 100%);
+      overflow: hidden;
+    }
+    .info-item {
+      min-height: 92px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      padding: 18px 20px;
+    }
+    .info-item + .info-item { border-left: 1px solid rgba(23,23,26,.08); }
+    .info-icon {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid rgba(242,185,0,.2);
+      color: var(--kb-purple-deep);
+      box-shadow: 0 7px 18px rgba(33,23,44,.05);
+    }
+    .info-item strong {
+      display: block;
+      font-size: .82rem;
+      line-height: 1.35;
+    }
+    .info-item span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: .72rem;
+      line-height: 1.45;
+    }
+
+    .footnote {
+      padding: 0 0 42px;
+      color: #7a7a82;
+      font-size: .72rem;
+      line-height: 1.6;
+    }
+
+    /* Reveal */
+    .reveal {
+      opacity: 0;
+      transform: translateY(16px) scale(.992);
+      transition: opacity .55s var(--ease), transform .55s var(--ease);
+    }
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    @keyframes visualFloat {
+      0%, 100% { transform: translateY(0) rotate(.5deg); }
+      50% { transform: translateY(-7px) rotate(0deg); }
+    }
+    @keyframes cardFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    @media (max-width: 1040px) {
+      .nav-links { display: none; }
+      .menu-toggle { display: inline-flex; }
+      .hero-grid {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 30px;
+        padding-top: 54px;
+      }
+      .hero-copy, .hero-lead { margin-inline: auto; }
+      .eyebrow { margin-inline: auto; }
+      .hero-actions, .trust-row { justify-content: center; }
+      .hero-visual { min-height: 480px; }
+      .showcase { width: min(560px, 90%); }
+      .process-panel { grid-template-columns: 1fr 1fr; }
+      .process-intro { grid-column: 1 / -1; }
+      .process-intro strong { max-width: none; }
+      .process-card:nth-of-type(2) { border-left: 0; }
+      .process-card:nth-of-type(4) { border-top: 1px solid var(--line); }
+      .info-strip-grid { grid-template-columns: 1fr 1fr; }
+      .info-item:nth-child(3) { border-left: 0; border-top: 1px solid rgba(23,23,26,.08); }
+      .info-item:nth-child(4) { border-top: 1px solid rgba(23,23,26,.08); }
+    }
+
+    @media (max-width: 620px) {
+      :root { --header-h: 70px; }
+      .container { width: min(calc(100% - 28px), var(--container)); }
+      .brand strong { font-size: 1.18rem; }
+      .brand span { font-size: .58rem; }
+      .hero-grid {
+        min-height: auto;
+        padding: 42px 0 54px;
+      }
+      .hero::after { display: none; }
+      h1 {
+        font-size: clamp(2.75rem, 13.2vw, 4rem);
+        line-height: 1;
+      }
+      .hero-lead {
+        font-size: .98rem;
+        line-height: 1.65;
+      }
+      .hero-actions {
+        flex-direction: column;
+      }
+      .btn { width: 100%; }
+      .trust-row {
+        gap: 10px 14px;
+        font-size: .75rem;
+      }
+      .hero-visual {
+        min-height: 350px;
+        margin-top: 2px;
+      }
+      .showcase {
+        width: 100%;
+        border-radius: 24px;
+      }
+      .showcase img { border-radius: 18px; }
+      .showcase::before {
+        inset: -10px 26px 46% -10px;
+        border-radius: 24px 40px 24px 34px;
+      }
+      .float-card {
+        min-width: auto;
+        padding: 9px 10px;
+        border-radius: 15px;
+      }
+      .float-card .num {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+      }
+      .float-card strong { font-size: .72rem; }
+      .float-card small { font-size: .62rem; }
+      .card-a { left: -4px; top: 10%; }
+      .card-b { right: -4px; bottom: 8%; }
+      .visual-caption { left: 15px; bottom: 15px; font-size: .65rem; }
+      .process-wrap { margin-top: -2px; }
+      .process-panel {
+        grid-template-columns: 1fr;
+        border-radius: 20px;
+      }
+      .process-intro { grid-column: auto; }
+      .process-card {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+      .process-card:nth-of-type(2) { border-top: 0; }
+      .info-strip-grid {
+        grid-template-columns: 1fr;
+        border-radius: 20px;
+      }
+      .info-item + .info-item,
+      .info-item:nth-child(3),
+      .info-item:nth-child(4) {
+        border-left: 0;
+        border-top: 1px solid rgba(23,23,26,.08);
+      }
+    }
+
+
+    /* Hero Visual V3 — KBstar + KB Bank Campaign Showcase */
+    .hero-showcase-v3 {
+      position: relative;
+      width: min(560px, 100%);
+      min-height: 520px;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+    }
+
+    .hero-showcase-v3::before {
+      content: "";
+      position: absolute;
+      width: 420px;
+      height: 420px;
+      right: 12px;
+      top: 32px;
+      border-radius: 46% 54% 58% 42% / 43% 46% 54% 57%;
+      background:
+        radial-gradient(circle at 30% 28%, rgba(255,255,255,.22), transparent 24%),
+        linear-gradient(145deg, #7d25cf 0%, #651cad 58%, #4e1687 100%);
+      box-shadow: 0 38px 90px rgba(83,29,128,.22);
+      transform: rotate(-4deg);
+      z-index: -2;
+    }
+
+    .hero-showcase-v3::after {
+      content: "";
+      position: absolute;
+      width: 190px;
+      height: 190px;
+      right: -20px;
+      top: 6px;
+      border-radius: 50%;
+      background: var(--kb-yellow);
+      opacity: .95;
+      z-index: -3;
+      box-shadow: 0 24px 50px rgba(224,180,0,.24);
+    }
+
+    .showcase-orbit {
+      position: absolute;
+      width: 490px;
+      height: 490px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,203,5,.26);
+      box-shadow:
+        0 0 0 28px rgba(255,203,5,.045),
+        0 0 0 58px rgba(116,38,201,.028);
+      right: -45px;
+      bottom: -10px;
+      pointer-events: none;
+      z-index: -4;
+    }
+
+    .kbstar-product-card {
+      position: absolute;
+      width: min(430px, 82%);
+      right: 15px;
+      top: 70px;
+      border-radius: 30px;
+      padding: 7px;
+      background: rgba(255,255,255,.9);
+      border: 1px solid rgba(255,255,255,.92);
+      box-shadow: 0 34px 78px rgba(39,21,53,.24);
+      transform: rotate(2.2deg);
+      animation: showcaseMainFloat 7.5s ease-in-out infinite;
+      z-index: 2;
+    }
+
+    .kbstar-product-card img {
+      width: 100%;
+      aspect-ratio: 620 / 413;
+      object-fit: cover;
+      border-radius: 24px;
+    }
+
+    .campaign-mini-card {
+      position: absolute;
+      width: 190px;
+      left: -18px;
+      bottom: 24px;
+      padding: 6px;
+      border-radius: 23px;
+      background: rgba(255,255,255,.95);
+      border: 1px solid rgba(255,255,255,.92);
+      box-shadow: 0 26px 60px rgba(27,20,35,.18);
+      transform: rotate(-4.5deg);
+      animation: showcaseMiniFloat 6.3s ease-in-out infinite;
+      z-index: 5;
+    }
+
+    .campaign-mini-card img {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      border-radius: 18px;
+    }
+
+    .campaign-mini-tag {
+      position: absolute;
+      left: 16px;
+      bottom: 14px;
+      right: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(25,19,31,.78);
+      color: #fff;
+      backdrop-filter: blur(10px);
+      font-size: .66rem;
+      font-weight: 780;
+      letter-spacing: .01em;
+    }
+
+    .campaign-mini-tag span:last-child {
+      color: var(--kb-yellow);
+      font-weight: 900;
+    }
+
+    .showcase-chip {
+      position: absolute;
+      z-index: 8;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 54px;
+      padding: 9px 14px 9px 10px;
+      border-radius: 17px;
+      background: rgba(255,255,255,.95);
+      border: 1px solid rgba(255,255,255,.9);
+      box-shadow: 0 18px 42px rgba(34,22,47,.15);
+      backdrop-filter: blur(14px);
+      animation: cardFloat 5.8s ease-in-out infinite;
+    }
+
+    .showcase-chip .chip-icon {
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--kb-yellow);
+      color: #2d2500;
+      font-weight: 900;
+      font-size: .76rem;
+    }
+
+    .showcase-chip strong {
+      display: block;
+      font-size: .76rem;
+      line-height: 1.2;
+    }
+
+    .showcase-chip small {
+      display: block;
+      margin-top: 3px;
+      color: #7b7b82;
+      font-size: .64rem;
+      font-weight: 650;
+    }
+
+    .showcase-chip-a {
+      left: 16px;
+      top: 70px;
+    }
+
+    .showcase-chip-b {
+      right: -10px;
+      bottom: 58px;
+      animation-delay: -1.8s;
+    }
+
+    .showcase-chip-b .chip-icon {
+      background: var(--kb-purple);
+      color: #fff;
+    }
+
+    .showcase-brand-note {
+      position: absolute;
+      right: 28px;
+      top: 36px;
+      z-index: 9;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: rgba(255,255,255,.92);
+      font-size: .68rem;
+      font-weight: 800;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .showcase-brand-note::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--kb-yellow);
+      box-shadow: 0 0 0 4px rgba(255,203,5,.16);
+    }
+
+    @keyframes showcaseMainFloat {
+      0%, 100% { transform: translateY(0) rotate(2.2deg); }
+      50% { transform: translateY(-7px) rotate(1.4deg); }
+    }
+
+    @keyframes showcaseMiniFloat {
+      0%, 100% { transform: translateY(0) rotate(-4.5deg); }
+      50% { transform: translateY(-6px) rotate(-3.6deg); }
+    }
+
+    @media (max-width: 1040px) {
+      .hero-showcase-v3 {
+        width: min(600px, 100%);
+        min-height: 510px;
+        margin-inline: auto;
+      }
+      .hero-showcase-v3::before {
+        right: 50%;
+        transform: translateX(50%) rotate(-4deg);
+      }
+      .kbstar-product-card {
+        right: 50%;
+        transform: translateX(50%) rotate(2.2deg);
+      }
+      .showcase-chip-a { left: 3%; }
+      .showcase-chip-b { right: 3%; }
+      .campaign-mini-card { left: 5%; }
+    }
+
+    @media (max-width: 620px) {
+      .hero-showcase-v3 {
+        min-height: 390px;
+      }
+      .hero-showcase-v3::before {
+        width: 300px;
+        height: 300px;
+        top: 32px;
+      }
+      .hero-showcase-v3::after {
+        width: 115px;
+        height: 115px;
+        right: -24px;
+        top: 10px;
+      }
+      .showcase-orbit {
+        width: 340px;
+        height: 340px;
+        right: -90px;
+        bottom: -18px;
+      }
+      .kbstar-product-card {
+        width: min(335px, 88%);
+        top: 64px;
+        border-radius: 24px;
+        padding: 5px;
+      }
+      .kbstar-product-card img {
+        border-radius: 19px;
+      }
+      .campaign-mini-card {
+        width: 118px;
+        left: 0;
+        bottom: 18px;
+        border-radius: 17px;
+        padding: 4px;
+      }
+      .campaign-mini-card img {
+        border-radius: 13px;
+      }
+      .campaign-mini-tag {
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        padding: 6px 7px;
+        border-radius: 9px;
+        font-size: .53rem;
+      }
+      .showcase-chip {
+        min-height: 44px;
+        padding: 7px 9px 7px 7px;
+        border-radius: 14px;
+      }
+      .showcase-chip .chip-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        font-size: .64rem;
+      }
+      .showcase-chip strong { font-size: .64rem; }
+      .showcase-chip small { font-size: .55rem; }
+      .showcase-chip-a { left: 1px; top: 40px; }
+      .showcase-chip-b { right: 0; bottom: 38px; }
+      .showcase-brand-note {
+        top: 40px;
+        right: 10px;
+        font-size: .56rem;
+      }
+    }
+
+
+
+    /* Dashboard visual — KBstar-inspired, loan-focused */
+    .loan-dashboard-showcase {
+      position: relative;
+      width: min(570px, 100%);
+      min-height: 535px;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+    }
+
+    .loan-dashboard-showcase::before {
+      content: "";
+      position: absolute;
+      inset: 18px 4px 24px 46px;
+      z-index: -3;
+      border-radius: 42px;
+      background:
+        radial-gradient(circle at 78% 12%, rgba(255,203,5,.9) 0 72px, transparent 73px),
+        linear-gradient(145deg, #7b26cf 0%, #681caf 58%, #53168c 100%);
+      box-shadow: 0 42px 90px rgba(77,31,116,.22);
+      transform: rotate(1.5deg);
+    }
+
+    .loan-dashboard-showcase::after {
+      content: "";
+      position: absolute;
+      width: 230px;
+      height: 230px;
+      left: 8px;
+      bottom: 5px;
+      z-index: -4;
+      border-radius: 50%;
+      background: rgba(255,203,5,.95);
+      box-shadow: 0 28px 68px rgba(204,164,0,.22);
+    }
+
+    .dashboard-shell {
+      position: relative;
+      width: min(430px, 78%);
+      min-height: 485px;
+      margin-left: 44px;
+      border: 7px solid rgba(255,255,255,.94);
+      border-radius: 34px;
+      background: #f8f8fa;
+      overflow: hidden;
+      box-shadow: 0 34px 80px rgba(24,17,33,.26);
+      transform: rotate(1.2deg);
+      animation: dashboardFloat 7s ease-in-out infinite;
+      z-index: 2;
+    }
+
+    .dashboard-header {
+      min-height: 92px;
+      padding: 18px 18px 13px;
+      color: #fff;
+      background:
+        radial-gradient(circle at 90% 0%, rgba(255,203,5,.24), transparent 32%),
+        linear-gradient(135deg, #7624c5, #5c188f);
+    }
+
+    .dashboard-brand-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .dashboard-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 850;
+      letter-spacing: -.02em;
+    }
+
+    .dashboard-brand .kb-dot {
+      width: 25px;
+      height: 25px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--kb-yellow);
+      color: #241d00;
+      font-size: .64rem;
+      font-weight: 950;
+    }
+
+    .dashboard-brand small {
+      display: block;
+      margin-top: 2px;
+      opacity: .72;
+      font-size: .53rem;
+      font-weight: 650;
+      letter-spacing: .04em;
+    }
+
+    .dashboard-bell {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: rgba(255,255,255,.12);
+      font-size: .72rem;
+    }
+
+    .dashboard-account {
+      margin-top: 14px;
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .dashboard-account span {
+      display: block;
+      opacity: .72;
+      font-size: .56rem;
+      font-weight: 700;
+    }
+
+    .dashboard-account strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 1rem;
+      letter-spacing: .04em;
+    }
+
+    .dashboard-body {
+      padding: 15px 15px 72px;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-top: -2px;
+    }
+
+    .quick-action {
+      min-width: 0;
+      display: grid;
+      place-items: center;
+      gap: 6px;
+      padding: 9px 4px 7px;
+      border-radius: 13px;
+      background: #fff;
+      border: 1px solid rgba(23,23,26,.06);
+      box-shadow: 0 6px 16px rgba(31,24,39,.045);
+      color: #47474e;
+      font-size: .53rem;
+      font-weight: 720;
+      text-align: center;
+    }
+
+    .quick-icon {
+      width: 28px;
+      height: 28px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      background: var(--kb-yellow-soft);
+      color: #735d00;
+      font-size: .65rem;
+      font-weight: 900;
+    }
+
+    .loan-widget {
+      position: relative;
+      overflow: hidden;
+      margin-top: 13px;
+      padding: 15px;
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(255,203,5,.26), transparent 34%),
+        linear-gradient(135deg, #fff9dc, #fff);
+      border: 1px solid rgba(238,191,0,.18);
+    }
+
+    .loan-widget::after {
+      content: "";
+      position: absolute;
+      width: 108px;
+      height: 108px;
+      right: -50px;
+      bottom: -54px;
+      border: 18px solid rgba(116,38,201,.07);
+      border-radius: 50%;
+    }
+
+    .loan-widget-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .loan-widget-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: #5a188e;
+      font-size: .58rem;
+      font-weight: 850;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .loan-widget-label::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--kb-purple);
+    }
+
+    .loan-widget-tag {
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid rgba(116,38,201,.11);
+      color: #6e6e76;
+      font-size: .5rem;
+      font-weight: 760;
+    }
+
+    .loan-widget h3 {
+      position: relative;
+      z-index: 1;
+      max-width: 290px;
+      margin: 10px 0 0;
+      font-size: 1.03rem;
+      line-height: 1.22;
+      letter-spacing: -.03em;
+    }
+
+    .loan-type-chips {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .loan-type-chips span {
+      padding: 6px 8px;
+      border-radius: 9px;
+      background: #fff;
+      border: 1px solid rgba(23,23,26,.07);
+      color: #55555d;
+      font-size: .51rem;
+      font-weight: 720;
+    }
+
+    .loan-widget-link {
+      position: relative;
+      z-index: 1;
+      width: fit-content;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 12px;
+      padding: 8px 11px;
+      border-radius: 10px;
+      background: var(--kb-yellow);
+      color: #2a2300;
+      font-size: .57rem;
+      font-weight: 850;
+    }
+
+    .dashboard-info-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 9px;
+      margin-top: 11px;
+    }
+
+    .dashboard-mini {
+      padding: 10px 11px;
+      border-radius: 13px;
+      background: #fff;
+      border: 1px solid rgba(23,23,26,.06);
+    }
+
+    .dashboard-mini small {
+      display: block;
+      color: #85858c;
+      font-size: .5rem;
+      font-weight: 690;
+    }
+
+    .dashboard-mini strong {
+      display: block;
+      margin-top: 5px;
+      font-size: .64rem;
+      line-height: 1.3;
+    }
+
+    .dashboard-bottom-nav {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      min-height: 57px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      align-items: center;
+      padding: 6px 8px;
+      background: rgba(255,255,255,.96);
+      border-top: 1px solid rgba(23,23,26,.06);
+      backdrop-filter: blur(12px);
+    }
+
+    .dash-nav-item {
+      display: grid;
+      place-items: center;
+      gap: 3px;
+      color: #919197;
+      font-size: .48rem;
+      font-weight: 730;
+    }
+
+    .dash-nav-icon {
+      width: 23px;
+      height: 23px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      font-size: .56rem;
+      font-weight: 900;
+    }
+
+    .dash-nav-item.active {
+      color: var(--kb-purple-deep);
+    }
+
+    .dash-nav-item.active .dash-nav-icon {
+      background: var(--kb-purple);
+      color: #fff;
+    }
+
+    .dashboard-float {
+      position: absolute;
+      z-index: 8;
+      min-width: 178px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 11px 13px;
+      border-radius: 17px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(255,255,255,.9);
+      box-shadow: 0 18px 44px rgba(30,21,40,.15);
+      backdrop-filter: blur(12px);
+      animation: cardFloat 5.6s ease-in-out infinite;
+    }
+
+    .dashboard-float-icon {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--kb-yellow);
+      color: #2c2400;
+      font-size: .68rem;
+      font-weight: 900;
+    }
+
+    .dashboard-float strong {
+      display: block;
+      font-size: .74rem;
+    }
+
+    .dashboard-float small {
+      display: block;
+      margin-top: 3px;
+      color: #7f7f87;
+      font-size: .61rem;
+      font-weight: 650;
+    }
+
+    .dashboard-float.one {
+      left: -6px;
+      top: 88px;
+    }
+
+    .dashboard-float.two {
+      right: -4px;
+      bottom: 68px;
+      animation-delay: -1.9s;
+    }
+
+    .dashboard-float.two .dashboard-float-icon {
+      background: var(--kb-purple);
+      color: #fff;
+    }
+
+    .dashboard-legal-note {
+      position: absolute;
+      left: 54px;
+      bottom: 18px;
+      z-index: 6;
+      max-width: 190px;
+      color: rgba(255,255,255,.86);
+      font-size: .53rem;
+      line-height: 1.35;
+      font-weight: 620;
+    }
+
+    @keyframes dashboardFloat {
+      0%, 100% { transform: translateY(0) rotate(1.2deg); }
+      50% { transform: translateY(-7px) rotate(.7deg); }
+    }
+
+    @media (max-width: 1040px) {
+      .loan-dashboard-showcase {
+        width: min(610px, 100%);
+        min-height: 535px;
+        margin-inline: auto;
+      }
+
+      .dashboard-shell {
+        width: min(430px, 76%);
+        margin-left: 0;
+      }
+
+      .dashboard-float.one { left: 3%; }
+      .dashboard-float.two { right: 3%; }
+    }
+
+    @media (max-width: 620px) {
+      .loan-dashboard-showcase {
+        min-height: 430px;
+      }
+
+      .loan-dashboard-showcase::before {
+        inset: 12px 1px 32px 20px;
+        border-radius: 29px;
+      }
+
+      .loan-dashboard-showcase::after {
+        width: 150px;
+        height: 150px;
+        left: -34px;
+      }
+
+      .dashboard-shell {
+        width: min(345px, 86%);
+        min-height: 388px;
+        border-width: 5px;
+        border-radius: 27px;
+      }
+
+      .dashboard-header {
+        min-height: 75px;
+        padding: 13px 13px 10px;
+      }
+
+      .dashboard-account { margin-top: 9px; }
+      .dashboard-account strong { font-size: .78rem; }
+
+      .dashboard-body {
+        padding: 10px 10px 58px;
+      }
+
+      .quick-action { padding: 6px 2px; font-size: .42rem; }
+      .quick-icon { width: 23px; height: 23px; border-radius: 7px; font-size: .53rem; }
+
+      .loan-widget {
+        margin-top: 8px;
+        padding: 11px;
+        border-radius: 14px;
+      }
+
+      .loan-widget h3 {
+        max-width: 230px;
+        margin-top: 7px;
+        font-size: .82rem;
+      }
+
+      .loan-type-chips { margin-top: 8px; gap: 4px; }
+      .loan-type-chips span { padding: 4px 6px; font-size: .42rem; }
+      .loan-widget-link { margin-top: 8px; padding: 6px 8px; font-size: .46rem; }
+
+      .dashboard-info-row { gap: 6px; margin-top: 7px; }
+      .dashboard-mini { padding: 7px 8px; }
+      .dashboard-mini small { font-size: .4rem; }
+      .dashboard-mini strong { font-size: .5rem; }
+
+      .dashboard-bottom-nav { min-height: 47px; }
+      .dash-nav-item { font-size: .4rem; }
+      .dash-nav-icon { width: 19px; height: 19px; }
+
+      .dashboard-float {
+        min-width: 140px;
+        padding: 8px 9px;
+        border-radius: 13px;
+      }
+      .dashboard-float-icon {
+        width: 29px;
+        height: 29px;
+        border-radius: 9px;
+        font-size: .56rem;
+      }
+      .dashboard-float strong { font-size: .59rem; }
+      .dashboard-float small { font-size: .49rem; }
+
+      .dashboard-float.one { left: 0; top: 48px; }
+      .dashboard-float.two { right: 0; bottom: 43px; }
+
+      .dashboard-legal-note {
+        display: none;
+      }
+    }
+
+
+
+    /* Hero Visual V5 — KBstar dashboard + loan showcase */
+    .hero-showcase-v5 {
+      position: relative;
+      width: min(590px, 100%);
+      min-height: 540px;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+    }
+
+    .hero-showcase-v5::before {
+      content: "";
+      position: absolute;
+      inset: 22px 0 28px 56px;
+      z-index: -4;
+      border-radius: 44px;
+      background:
+        radial-gradient(circle at 82% 15%, rgba(255,203,5,.95) 0 76px, transparent 77px),
+        radial-gradient(circle at 8% 85%, rgba(255,203,5,.22), transparent 30%),
+        linear-gradient(145deg, #7e29d7 0%, #6b20bc 52%, #53158d 100%);
+      box-shadow: 0 40px 90px rgba(79,30,121,.24);
+      transform: rotate(1.4deg);
+    }
+
+    .hero-showcase-v5::after {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      right: -70px;
+      bottom: -16px;
+      z-index: -5;
+      border-radius: 50%;
+      border: 1px solid rgba(255,203,5,.28);
+      box-shadow:
+        0 0 0 34px rgba(255,203,5,.055),
+        0 0 0 68px rgba(116,38,201,.032);
+    }
+
+    .phone-stage {
+      position: relative;
+      width: 286px;
+      height: 506px;
+      margin-left: 92px;
+      border-radius: 42px;
+      background: #16161a;
+      padding: 9px;
+      box-shadow:
+        0 28px 65px rgba(20,14,28,.30),
+        0 0 0 1px rgba(255,255,255,.10) inset;
+      transform: rotate(2.1deg);
+      animation: phoneFloatV5 7s ease-in-out infinite;
+      z-index: 3;
+    }
+
+    .phone-stage::before {
+      content: "";
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      width: 92px;
+      height: 23px;
+      transform: translateX(-50%);
+      border-radius: 0 0 15px 15px;
+      background: #111115;
+      z-index: 6;
+    }
+
+    .phone-stage::after {
+      content: "";
+      position: absolute;
+      inset: 9px;
+      border-radius: 34px;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.10) inset;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .phone-screen {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      border-radius: 34px;
+      background: #fff;
+    }
+
+    .phone-screen img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: 50% 48%;
+      transform: scale(1.03);
+    }
+
+    .phone-gloss {
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      pointer-events: none;
+      border-radius: 34px;
+      background:
+        linear-gradient(125deg, rgba(255,255,255,.14), transparent 25% 70%, rgba(255,255,255,.06));
+    }
+
+    .loan-overlay {
+      position: absolute;
+      left: -20px;
+      top: 150px;
+      z-index: 8;
+      width: 255px;
+      padding: 17px 17px 16px;
+      border-radius: 22px;
+      background: rgba(255,255,255,.97);
+      border: 1px solid rgba(255,255,255,.92);
+      box-shadow: 0 24px 58px rgba(30,20,42,.20);
+      backdrop-filter: blur(14px);
+      animation: cardFloatV5 5.8s ease-in-out infinite;
+    }
+
+    .loan-overlay-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .loan-overlay-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--kb-purple-deep);
+      font-size: .64rem;
+      font-weight: 880;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    .loan-overlay-badge::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--kb-yellow);
+      box-shadow: 0 0 0 5px rgba(255,203,5,.16);
+    }
+
+    .loan-overlay-tag {
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #f7effe;
+      color: var(--kb-purple-deep);
+      font-size: .53rem;
+      font-weight: 800;
+    }
+
+    .loan-overlay h3 {
+      margin: 13px 0 0;
+      font-size: 1.02rem;
+      line-height: 1.25;
+      letter-spacing: -.025em;
+    }
+
+    .loan-overlay p {
+      margin: 7px 0 0;
+      color: #77777f;
+      font-size: .68rem;
+      line-height: 1.48;
+    }
+
+    .loan-overlay-types {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .loan-overlay-types span {
+      padding: 6px 8px;
+      border-radius: 9px;
+      background: #fff9dc;
+      border: 1px solid rgba(229,184,0,.14);
+      color: #665500;
+      font-size: .55rem;
+      font-weight: 760;
+    }
+
+    .loan-overlay-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 13px;
+      padding: 9px 11px;
+      border-radius: 11px;
+      background: var(--kb-yellow);
+      color: #2b2400;
+      font-size: .62rem;
+      font-weight: 880;
+      box-shadow: 0 8px 18px rgba(205,163,0,.16);
+    }
+
+    .official-chip {
+      position: absolute;
+      right: 2px;
+      top: 64px;
+      z-index: 9;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 54px;
+      padding: 9px 13px 9px 9px;
+      border-radius: 18px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(255,255,255,.9);
+      box-shadow: 0 18px 44px rgba(31,21,42,.16);
+      backdrop-filter: blur(12px);
+      animation: cardFloatV5 6.2s ease-in-out infinite reverse;
+    }
+
+    .official-chip-icon {
+      width: 37px;
+      height: 37px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: var(--kb-purple);
+      color: #fff;
+      font-size: .68rem;
+      font-weight: 900;
+    }
+
+    .official-chip strong {
+      display: block;
+      font-size: .75rem;
+    }
+
+    .official-chip small {
+      display: block;
+      margin-top: 3px;
+      color: #7f7f86;
+      font-size: .61rem;
+      font-weight: 650;
+    }
+
+    .showcase-caption-v5 {
+      position: absolute;
+      right: 34px;
+      bottom: 25px;
+      z-index: 8;
+      max-width: 205px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(28,20,34,.72);
+      color: rgba(255,255,255,.92);
+      font-size: .59rem;
+      line-height: 1.42;
+      font-weight: 650;
+      backdrop-filter: blur(10px);
+    }
+
+    @keyframes phoneFloatV5 {
+      0%, 100% { transform: translateY(0) rotate(2.1deg); }
+      50% { transform: translateY(-7px) rotate(1.3deg); }
+    }
+
+    @keyframes cardFloatV5 {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    @media (max-width: 1040px) {
+      .hero-showcase-v5 {
+        width: min(620px, 100%);
+        min-height: 545px;
+        margin-inline: auto;
+      }
+      .phone-stage {
+        margin-left: 0;
+      }
+      .loan-overlay { left: 3%; }
+      .official-chip { right: 3%; }
+    }
+
+    @media (max-width: 620px) {
+      .hero-showcase-v5 {
+        min-height: 430px;
+      }
+
+      .hero-showcase-v5::before {
+        inset: 16px 0 28px 18px;
+        border-radius: 30px;
+      }
+
+      .hero-showcase-v5::after {
+        width: 170px;
+        height: 170px;
+        right: -78px;
+      }
+
+      .phone-stage {
+        width: 224px;
+        height: 398px;
+        padding: 7px;
+        border-radius: 34px;
+      }
+
+      .phone-stage::before {
+        top: 8px;
+        width: 74px;
+        height: 18px;
+      }
+
+      .phone-stage::after {
+        inset: 7px;
+        border-radius: 28px;
+      }
+
+      .phone-screen {
+        border-radius: 28px;
+      }
+
+      .loan-overlay {
+        left: 0;
+        top: 128px;
+        width: 185px;
+        padding: 12px;
+        border-radius: 17px;
+      }
+
+      .loan-overlay h3 { font-size: .78rem; }
+      .loan-overlay p { font-size: .55rem; }
+      .loan-overlay-types { gap: 4px; margin-top: 8px; }
+      .loan-overlay-types span { padding: 4px 6px; font-size: .45rem; }
+      .loan-overlay-cta { margin-top: 9px; padding: 7px 8px; font-size: .5rem; }
+
+      .official-chip {
+        right: 0;
+        top: 38px;
+        min-height: 43px;
+        padding: 7px 8px 7px 7px;
+        border-radius: 14px;
+      }
+
+      .official-chip-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        font-size: .55rem;
+      }
+
+      .official-chip strong { font-size: .61rem; }
+      .official-chip small { font-size: .49rem; }
+
+      .showcase-caption-v5 {
+        right: 10px;
+        bottom: 24px;
+        max-width: 155px;
+        font-size: .49rem;
+      }
+    }
+
+
+
+    /* Hero Visual V6 — KBstar campaign showcase */
+    .hero-campaign-v6 {
+      position: relative;
+      width: min(570px, 100%);
+      min-height: 540px;
+      display: grid;
+      place-items: center;
+      isolation: isolate;
+    }
+
+    .hero-campaign-v6::before {
+      content: "";
+      position: absolute;
+      inset: 18px 8px 30px 48px;
+      z-index: -3;
+      border-radius: 42px;
+      background:
+        radial-gradient(circle at 82% 14%, rgba(255,203,5,.95) 0 82px, transparent 83px),
+        radial-gradient(circle at 8% 90%, rgba(255,203,5,.23), transparent 30%),
+        linear-gradient(145deg, #7d28d0 0%, #6820b3 55%, #511486 100%);
+      box-shadow: 0 40px 90px rgba(74,28,116,.24);
+      transform: rotate(1.2deg);
+    }
+
+    .hero-campaign-v6::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -70px;
+      bottom: -8px;
+      z-index: -4;
+      border-radius: 50%;
+      border: 1px solid rgba(255,203,5,.26);
+      box-shadow:
+        0 0 0 34px rgba(255,203,5,.05),
+        0 0 0 68px rgba(116,38,201,.03);
+    }
+
+    .campaign-card-v6 {
+      position: relative;
+      width: min(390px, 74%);
+      padding: 7px;
+      border-radius: 30px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(255,255,255,.94);
+      box-shadow: 0 34px 78px rgba(28,19,39,.24);
+      transform: rotate(1.7deg);
+      animation: campaignFloatV6 7s ease-in-out infinite;
+      z-index: 3;
+    }
+
+    .campaign-card-v6 img {
+      width: 100%;
+      aspect-ratio: 392 / 489;
+      object-fit: cover;
+      border-radius: 23px;
+    }
+
+    .campaign-chip-v6 {
+      position: absolute;
+      z-index: 8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 184px;
+      padding: 11px 13px;
+      border-radius: 17px;
+      background: rgba(255,255,255,.96);
+      border: 1px solid rgba(255,255,255,.9);
+      box-shadow: 0 18px 44px rgba(31,21,42,.16);
+      backdrop-filter: blur(12px);
+      animation: campaignChipFloatV6 5.8s ease-in-out infinite;
+    }
+
+    .campaign-chip-v6 .icon {
+      width: 36px;
+      height: 36px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 11px;
+      background: var(--kb-yellow);
+      color: #2c2400;
+      font-size: .68rem;
+      font-weight: 900;
+    }
+
+    .campaign-chip-v6 strong {
+      display: block;
+      font-size: .74rem;
+    }
+
+    .campaign-chip-v6 small {
+      display: block;
+      margin-top: 3px;
+      color: #7f7f87;
+      font-size: .61rem;
+      font-weight: 650;
+    }
+
+    .campaign-chip-v6.one {
+      left: 4px;
+      top: 82px;
+    }
+
+    .campaign-chip-v6.two {
+      right: -8px;
+      bottom: 70px;
+      animation-delay: -1.8s;
+    }
+
+    .campaign-chip-v6.two .icon {
+      background: var(--kb-purple);
+      color: #fff;
+    }
+
+    .campaign-caption-v6 {
+      position: absolute;
+      left: 22px;
+      bottom: 30px;
+      z-index: 9;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 13px;
+      border-radius: 12px;
+      background: rgba(24,18,31,.78);
+      color: #fff;
+      font-size: .62rem;
+      font-weight: 800;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 14px 30px rgba(20,14,27,.18);
+    }
+
+    .campaign-caption-v6::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--kb-yellow);
+    }
+
+    @keyframes campaignFloatV6 {
+      0%, 100% { transform: translateY(0) rotate(1.7deg); }
+      50% { transform: translateY(-7px) rotate(1deg); }
+    }
+
+    @keyframes campaignChipFloatV6 {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    @media (max-width: 1040px) {
+      .hero-campaign-v6 {
+        width: min(610px, 100%);
+        min-height: 555px;
+        margin-inline: auto;
+      }
+      .campaign-chip-v6.one { left: 5%; }
+      .campaign-chip-v6.two { right: 5%; }
+    }
+
+    @media (max-width: 620px) {
+      .hero-campaign-v6 {
+        min-height: 430px;
+      }
+
+      .hero-campaign-v6::before {
+        inset: 14px 0 28px 18px;
+        border-radius: 30px;
+      }
+
+      .hero-campaign-v6::after {
+        width: 150px;
+        height: 150px;
+        right: -70px;
+      }
+
+      .campaign-card-v6 {
+        width: min(285px, 72%);
+        border-radius: 24px;
+        padding: 5px;
+      }
+
+      .campaign-card-v6 img {
+        border-radius: 19px;
+      }
+
+      .campaign-chip-v6 {
+        min-width: 142px;
+        padding: 8px 9px;
+        border-radius: 14px;
+      }
+
+      .campaign-chip-v6 .icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 9px;
+        font-size: .55rem;
+      }
+
+      .campaign-chip-v6 strong { font-size: .60rem; }
+      .campaign-chip-v6 small { font-size: .49rem; }
+
+      .campaign-chip-v6.one { left: 0; top: 56px; }
+      .campaign-chip-v6.two { right: 0; bottom: 48px; }
+
+      .campaign-caption-v6 {
+        left: 12px;
+        bottom: 24px;
+        padding: 8px 10px;
+        font-size: .52rem;
+      }
+    }
+
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+      }
+      .reveal { opacity: 1; transform: none; }
+    }
+  
+
+    /* =========================================================
+       PDF MERGE — content reconstructed from a(1).pdf pages 1–2
+       Prefix: official-* to avoid regressions in the existing UI.
+       ========================================================= */
+    .official-breadcrumb-wrap {
+      background: #fff;
+      border-bottom: 1px solid rgba(23,23,26,.055);
+    }
+    .official-breadcrumb {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      color: #5f5f66;
+      font-size: .82rem;
+      font-weight: 680;
+    }
+    .official-breadcrumb-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #56565c;
+      font-size: .96rem;
+      font-weight: 840;
+      letter-spacing: -.025em;
+    }
+    .official-kb-mark {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--kb-yellow);
+      color: #3d3300;
+      font-size: .65rem;
+      font-weight: 950;
+      box-shadow: 0 7px 16px rgba(205,163,0,.16);
+    }
+    .official-breadcrumb-chevron {
+      color: #a0a0a6;
+      font-size: 1rem;
+    }
+
+    .official-directory {
+      position: relative;
+      overflow: hidden;
+      padding: 78px 0 76px;
+      border-top: 1px solid rgba(23,23,26,.05);
+      background:
+        radial-gradient(circle at 92% 8%, rgba(255,203,5,.16), transparent 24%),
+        linear-gradient(180deg, #fff 0%, #fffdf8 100%);
+    }
+    .official-directory::after {
+      content: "";
+      position: absolute;
+      width: 410px;
+      height: 410px;
+      right: -220px;
+      bottom: -240px;
+      border-radius: 50%;
+      border: 1px solid rgba(116,38,201,.08);
+      box-shadow: 0 0 0 40px rgba(116,38,201,.025), 0 0 0 80px rgba(255,203,5,.025);
+      pointer-events: none;
+    }
+    .official-directory-head {
+      display: grid;
+      grid-template-columns: 1fr minmax(300px, 470px);
+      gap: 44px;
+      align-items: end;
+      margin-bottom: 38px;
+    }
+    .official-directory-head h2 {
+      margin: 9px 0 0;
+      max-width: 680px;
+      font-size: clamp(2rem, 3.4vw, 3.25rem);
+      line-height: 1.06;
+      letter-spacing: -.045em;
+    }
+    .official-directory-head p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .93rem;
+      line-height: 1.7;
+    }
+    .official-directory-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .official-directory-card {
+      min-width: 0;
+      padding: 23px 22px 22px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      background: rgba(255,255,255,.96);
+      box-shadow: 0 10px 30px rgba(24,24,28,.05);
+      transition: transform .22s var(--ease), box-shadow .22s var(--ease), border-color .22s var(--ease);
+    }
+    .official-directory-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(242,185,0,.22);
+      box-shadow: 0 17px 38px rgba(24,24,28,.08);
+    }
+    .official-directory-card h3 {
+      margin: 0 0 15px;
+      color: #8e8e94;
+      font-size: .72rem;
+      font-weight: 820;
+      letter-spacing: .08em;
+      text-transform: none;
+    }
+    .official-directory-links {
+      display: grid;
+      gap: 8px;
+    }
+    .official-directory-links a,
+    .official-directory-links span {
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 7px 10px;
+      border-radius: 11px;
+      color: #4d4d53;
+      font-size: .83rem;
+      font-weight: 690;
+      transition: background .2s var(--ease), color .2s var(--ease), transform .2s var(--ease);
+    }
+    .official-directory-links a:hover {
+      background: var(--kb-yellow-soft);
+      color: #312900;
+      transform: translateX(2px);
+    }
+    .official-directory-links a::after,
+    .official-directory-links span::after {
+      content: "→";
+      color: #b5a000;
+      font-weight: 850;
+      opacity: .8;
+    }
+
+    .official-support {
+      padding: 0 0 76px;
+      background: #fffdf8;
+    }
+    .official-support-panel {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: .86fr 1.14fr;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(28,24,34,.08);
+    }
+    .official-support-primary {
+      position: relative;
+      padding: 38px 36px 34px;
+      background:
+        radial-gradient(circle at 88% 12%, rgba(255,255,255,.16), transparent 24%),
+        linear-gradient(145deg, #ffcf10, #f2b900);
+      color: #2a2300;
+    }
+    .official-support-primary::after {
+      content: "";
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      right: -118px;
+      bottom: -128px;
+      border-radius: 50%;
+      border: 22px solid rgba(255,255,255,.14);
+    }
+    .official-support-kicker {
+      color: rgba(42,35,0,.68);
+      font-size: .7rem;
+      font-weight: 880;
+      letter-spacing: .11em;
+      text-transform: uppercase;
+    }
+    .official-headset {
+      width: 116px;
+      height: 116px;
+      display: grid;
+      place-items: center;
+      margin: 24px 0 26px;
+      border-radius: 30px;
+      background: rgba(255,255,255,.74);
+      box-shadow: 0 16px 34px rgba(111,87,0,.12);
+    }
+    .official-headset svg {
+      width: 76px;
+      height: 76px;
+    }
+    .official-support-primary h3 {
+      margin: 0;
+      max-width: 380px;
+      font-size: clamp(1.55rem, 2.2vw, 2.25rem);
+      line-height: 1.15;
+      letter-spacing: -.035em;
+    }
+    .official-support-primary p {
+      max-width: 390px;
+      margin: 12px 0 0;
+      color: rgba(42,35,0,.72);
+      font-size: .86rem;
+      line-height: 1.62;
+    }
+    .official-complaint-link {
+      width: fit-content;
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 22px;
+      padding: 0 15px;
+      border-radius: 12px;
+      background: #242006;
+      color: #fff;
+      font-size: .8rem;
+      font-weight: 800;
+      box-shadow: 0 10px 23px rgba(62,50,0,.18);
+    }
+
+    .official-support-details {
+      padding: 35px 36px 31px;
+    }
+    .official-social-title {
+      margin: 0 0 13px;
+      color: #5a5a61;
+      font-size: .8rem;
+      font-weight: 760;
+    }
+    .official-social-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-bottom: 28px;
+    }
+    .official-social {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      background: #fff;
+      color: #77777d;
+      font-size: .75rem;
+      font-weight: 850;
+      box-shadow: 0 7px 18px rgba(26,26,30,.05);
+    }
+    .official-office {
+      display: grid;
+      gap: 7px;
+      color: #55555c;
+      font-size: .84rem;
+      line-height: 1.55;
+    }
+    .official-office strong {
+      color: #343439;
+      font-size: .87rem;
+    }
+    .official-contact-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 22px;
+      margin-top: 18px;
+    }
+    .official-contact {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #515158;
+      font-size: .78rem;
+      font-weight: 720;
+    }
+    .official-contact-icon {
+      width: 31px;
+      height: 31px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--kb-yellow-soft);
+      color: #665400;
+      font-size: .7rem;
+      font-weight: 900;
+    }
+    .official-legal {
+      margin-top: 27px;
+      padding-top: 23px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 10px;
+      color: #68686f;
+      font-size: .75rem;
+      line-height: 1.58;
+    }
+    .official-linklike {
+      color: #5b2a8d;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: help;
+    }
+    .official-source-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 21px;
+      padding-top: 17px;
+      border-top: 1px dashed rgba(23,23,26,.12);
+      color: #929298;
+      font-size: .65rem;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 960px) {
+      .official-directory-head { grid-template-columns: 1fr; gap: 18px; align-items: start; }
+      .official-directory-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .official-support-panel { grid-template-columns: 1fr; }
+      .official-support-primary { min-height: 360px; }
+    }
+    @media (max-width: 620px) {
+      .official-breadcrumb { min-height: 52px; font-size: .74rem; }
+      .official-kb-mark { width: 27px; height: 27px; border-radius: 9px; }
+      .official-directory { padding: 52px 0 52px; }
+      .official-directory-grid { grid-template-columns: 1fr; gap: 12px; }
+      .official-directory-card { padding: 19px 17px; border-radius: 18px; }
+      .official-support { padding-bottom: 52px; }
+      .official-support-panel { border-radius: 21px; }
+      .official-support-primary,
+      .official-support-details { padding: 27px 22px 25px; }
+      .official-support-primary { min-height: auto; }
+      .official-headset { width: 96px; height: 96px; margin: 20px 0 22px; border-radius: 25px; }
+      .official-headset svg { width: 64px; height: 64px; }
+      .official-contact-row { display: grid; grid-template-columns: 1fr; gap: 7px; }
+      .official-source-meta { display: grid; }
+    }
+
+
+
+    /* =========================================================
+       Official lower-page footer — exact links supplied by user
+       ========================================================= */
+    .kb-official-footer {
+      position: relative;
+      overflow: hidden;
+      padding: 58px 0 30px;
+      border-top: 1px solid rgba(23,23,26,.07);
+      background: #fff;
+      color: var(--ink);
+    }
+    .kb-official-footer::before {
+      content: "";
+      position: absolute;
+      width: 440px;
+      height: 440px;
+      right: -220px;
+      top: -230px;
+      border-radius: 50%;
+      background: rgba(255,203,5,.10);
+      pointer-events: none;
+    }
+    .kb-footer-top {
+      padding-bottom: 30px;
+      border-bottom: 1px solid var(--line);
+    }
+    .kb-footer-brand {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+    .kb-footer-wordmark {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .kb-footer-mark {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: var(--kb-yellow);
+      color: #251f00;
+      font-size: .72rem;
+      font-weight: 950;
+      letter-spacing: -.04em;
+    }
+    .kb-footer-wordmark strong {
+      font-size: 1.5rem;
+      letter-spacing: -.04em;
+    }
+    .kb-footer-page {
+      color: #6c6c74;
+      font-size: .9rem;
+      font-weight: 760;
+    }
+    .kb-footer-directory {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 34px 48px;
+      padding: 42px 0 44px;
+      border-bottom: 1px solid var(--line);
+    }
+    .kb-footer-group {
+      min-width: 0;
+    }
+    .kb-footer-group h3 {
+      margin: 0 0 15px;
+      color: #a18400;
+      font-size: .72rem;
+      line-height: 1.35;
+      font-weight: 850;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .kb-footer-group a {
+      width: fit-content;
+      display: block;
+      position: relative;
+      margin-top: 11px;
+      color: #37373d;
+      font-size: .86rem;
+      line-height: 1.48;
+      font-weight: 640;
+      transition: color .2s var(--ease), transform .2s var(--ease);
+    }
+    .kb-footer-group a::after {
+      content: "↗";
+      display: inline-block;
+      margin-left: 7px;
+      opacity: 0;
+      transform: translate(-4px, 2px);
+      transition: opacity .2s var(--ease), transform .2s var(--ease);
+    }
+    .kb-footer-group a:hover {
+      color: #6b4ea1;
+      transform: translateX(2px);
+    }
+    .kb-footer-group a:hover::after {
+      opacity: .75;
+      transform: translate(0, 0);
+    }
+    .kb-footer-support {
+      display: grid;
+      grid-template-columns: .92fr 1.08fr;
+      gap: 34px;
+      padding: 42px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .kb-footer-help {
+      min-height: 252px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 30px;
+      overflow: hidden;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 100% 0%, rgba(255,203,5,.28), transparent 38%),
+        #fff9dc;
+      border: 1px solid rgba(228,183,0,.18);
+    }
+    .kb-footer-eyebrow {
+      color: #755e00;
+      font-size: .68rem;
+      font-weight: 880;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .kb-footer-help h3 {
+      margin: 8px 0 0;
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
+      letter-spacing: -.035em;
+    }
+    .kb-footer-support-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 20px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      background: var(--kb-yellow);
+      color: #251f00;
+      font-size: .8rem;
+      font-weight: 830;
+    }
+    .kb-footer-callcenter {
+      flex: 0 0 130px;
+      width: 130px;
+      min-height: 130px;
+      display: grid;
+      place-items: center;
+      color: var(--kb-yellow-strong);
+    }
+    .kb-footer-callcenter img,
+    .kb-callcenter-fallback {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+    }
+    .kb-footer-company {
+      padding: 4px 0;
+    }
+    .kb-footer-social-block p {
+      margin: 0 0 12px;
+      color: #68686f;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+    .kb-footer-socials {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+    }
+    .kb-footer-socials a {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: #f6f6f7;
+      border: 1px solid var(--line);
+      color: #65656b;
+      transition: transform .2s var(--ease), background .2s var(--ease), color .2s var(--ease);
+    }
+    .kb-footer-socials a:hover {
+      transform: translateY(-2px);
+      background: var(--kb-yellow-soft);
+      color: #332a00;
+    }
+    .kb-footer-socials svg {
+      width: 17px;
+      height: 17px;
+    }
+    .kb-footer-office {
+      display: grid;
+      gap: 4px;
+      margin-top: 24px;
+      font-style: normal;
+    }
+    .kb-footer-office strong {
+      margin-bottom: 2px;
+      font-size: .9rem;
+    }
+    .kb-footer-office span {
+      color: #66666d;
+      font-size: .8rem;
+      line-height: 1.5;
+    }
+    .kb-footer-contacts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 22px;
+      margin-top: 20px;
+    }
+    .kb-footer-contacts a,
+    .kb-footer-contacts span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #45454b;
+      font-size: .8rem;
+      font-weight: 730;
+    }
+    .kb-footer-contacts svg {
+      width: 18px;
+      height: 18px;
+      color: #9a7d00;
+    }
+    .kb-footer-legal {
+      padding-top: 26px;
+      color: #76767d;
+      font-size: .72rem;
+      line-height: 1.65;
+    }
+    .kb-footer-legal p {
+      margin: 0;
+    }
+    .kb-footer-legal p + p {
+      margin-top: 9px;
+    }
+    .kb-footer-legal a {
+      color: #4f2e8b;
+      font-weight: 760;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    @media (max-width: 960px) {
+      .kb-footer-directory { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .kb-footer-support { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 620px) {
+      .kb-official-footer { padding: 44px 0 24px; }
+      .kb-footer-brand { align-items: flex-start; }
+      .kb-footer-wordmark strong { font-size: 1.3rem; }
+      .kb-footer-page { padding-top: 9px; }
+      .kb-footer-directory {
+        grid-template-columns: 1fr;
+        gap: 28px;
+        padding: 34px 0;
+      }
+      .kb-footer-group a { font-size: .88rem; }
+      .kb-footer-support { padding: 32px 0; }
+      .kb-footer-help {
+        min-height: 220px;
+        padding: 24px 20px;
+        border-radius: 20px;
+      }
+      .kb-footer-callcenter {
+        flex-basis: 92px;
+        width: 92px;
+      }
+      .kb-footer-callcenter img,
+      .kb-callcenter-fallback {
+        width: 88px;
+        height: 88px;
+      }
+      .kb-footer-contacts { flex-direction: column; gap: 11px; }
+    }
+
+  
+    .kb-footer-logo-img {
+      display: block;
+      width: 176px;
+      height: auto;
+      object-fit: contain;
+    }
+    .kb-footer-logo-fallback {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .kb-footer-page {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+
+    /* =========================================================
+       Functional official-style navigation — V11
+       ========================================================= */
+    .kb-functional-nav {
+      position: static;
+      gap: 24px;
+    }
+    .kb-functional-nav > a,
+    .nav-trigger {
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      color: #38383d;
+      font: inherit;
+      font-weight: 680;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .nav-dropdown {
+      position: static;
+      display: inline-flex;
+      align-items: center;
+    }
+    .nav-trigger .nav-chevron {
+      width: 14px;
+      height: 14px;
+      transition: transform .22s var(--ease);
+    }
+    .nav-trigger[aria-expanded="true"] .nav-chevron {
+      transform: rotate(180deg);
+    }
+    .nav-trigger:hover,
+    .kb-functional-nav > a:hover {
+      color: #111113;
+    }
+    .nav-trigger::after,
+    .kb-functional-nav > a::after {
+      content: "";
+      position: absolute;
+      height: 2px;
+      left: 0;
+      right: 100%;
+      bottom: 4px;
+      border-radius: 999px;
+      background: var(--kb-yellow-strong);
+      transition: right .25s var(--ease);
+    }
+    .nav-trigger { position: relative; }
+    .nav-trigger:hover::after,
+    .nav-trigger[aria-expanded="true"]::after,
+    .kb-functional-nav > a:hover::after { right: 0; }
+
+    .nav-mega-panel {
+      position: fixed;
+      top: var(--header-h);
+      left: 0;
+      right: 0;
+      z-index: 96;
+      border-top: 1px solid rgba(23,23,26,.05);
+      border-bottom: 1px solid rgba(23,23,26,.08);
+      background: rgba(255,255,255,.985);
+      box-shadow: 0 24px 60px rgba(24,24,28,.11);
+      backdrop-filter: blur(18px) saturate(150%);
+    }
+    .nav-mega-panel[hidden] { display: none !important; }
+    .mega-grid {
+      display: grid;
+      gap: 30px;
+      padding-top: 30px;
+      padding-bottom: 34px;
+    }
+    .mega-grid-solusi {
+      grid-template-columns: repeat(5, minmax(0,1fr));
+    }
+    .mega-grid-compact {
+      grid-template-columns: repeat(2, minmax(220px, 320px));
+      justify-content: start;
+    }
+    .nav-mega-panel.compact .mega-grid { padding-top: 26px; padding-bottom: 28px; }
+    .mega-column { min-width: 0; }
+    .mega-kicker {
+      margin: 0 0 13px;
+      color: #8c7200;
+      font-size: .69rem;
+      font-weight: 850;
+      letter-spacing: .09em;
+      text-transform: uppercase;
+    }
+    .mega-column a {
+      position: relative;
+      display: flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 7px 10px;
+      margin-left: -10px;
+      border-radius: 10px;
+      color: #333338;
+      font-size: .84rem;
+      font-weight: 690;
+      line-height: 1.3;
+      transition: background .18s var(--ease), transform .18s var(--ease), color .18s var(--ease);
+    }
+    .mega-column a::after {
+      content: "→";
+      margin-left: auto;
+      opacity: 0;
+      transform: translateX(-4px);
+      color: #8a7100;
+      transition: opacity .18s var(--ease), transform .18s var(--ease);
+    }
+    .mega-column a:hover,
+    .mega-column a:focus-visible {
+      background: #fff8d9;
+      color: #17171a;
+      transform: translateX(2px);
+    }
+    .mega-column a:hover::after,
+    .mega-column a:focus-visible::after {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .mobile-nav-group {
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .mobile-nav-trigger {
+      width: 100%;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: #242428;
+      font: inherit;
+      font-weight: 760;
+      text-align: left;
+      cursor: pointer;
+    }
+    .mobile-nav-trigger:hover,
+    .mobile-nav-trigger[aria-expanded="true"] {
+      background: var(--kb-yellow-soft);
+    }
+    .mobile-nav-trigger .nav-chevron {
+      flex: 0 0 auto;
+      width: 15px;
+      height: 15px;
+      transition: transform .2s var(--ease);
+    }
+    .mobile-nav-trigger[aria-expanded="true"] .nav-chevron { transform: rotate(180deg); }
+    .mobile-submenu {
+      display: grid;
+      gap: 2px;
+      padding: 5px 8px 11px 20px;
+    }
+    .mobile-submenu[hidden] { display: none !important; }
+    .mobile-submenu strong {
+      margin: 11px 6px 4px;
+      color: #8b7100;
+      font-size: .66rem;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+    }
+    .mobile-submenu a {
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 8px 10px;
+      color: #44444a;
+      font-size: .82rem;
+      font-weight: 680;
+    }
+    .mobile-menu.is-open {
+      max-height: calc(100dvh - var(--header-h) - 22px);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+
+    @media (max-width: 1180px) and (min-width: 1041px) {
+      .kb-functional-nav { gap: 16px; font-size: .84rem; }
+      .mega-grid-solusi { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    }
+
+
+
+    /* =========================================================
+       V13 — Mobile comfort pass
+       Focus: thumb reach, whitespace, ordered cards, KB yellow/white
+       ========================================================= */
+    .mobile-sticky-cta { display: none; }
+
+    @media (max-width: 620px) {
+      :root {
+        --header-h: 68px;
+        --radius-sm: 12px;
+        --radius-md: 18px;
+        --radius-lg: 22px;
+      }
+
+      html { scroll-padding-top: calc(var(--header-h) + 14px); }
+      body {
+        background: #fff;
+        padding-bottom: calc(84px + env(safe-area-inset-bottom));
+      }
+
+      .container {
+        width: min(calc(100% - 32px), var(--container));
+      }
+
+      /* Header: compact, stable, one-thumb menu access */
+      .site-header {
+        background: rgba(255,255,255,.96);
+        backdrop-filter: blur(14px) saturate(135%);
+      }
+      .nav {
+        min-height: var(--header-h);
+        gap: 12px;
+      }
+      .brand-line {
+        width: 30px;
+        height: 4px;
+        margin-bottom: 6px;
+      }
+      .brand strong { font-size: 1.12rem; }
+      .brand span {
+        margin-top: 4px;
+        font-size: .52rem;
+        letter-spacing: .15em;
+      }
+      .menu-toggle {
+        width: 46px;
+        height: 46px;
+        border-radius: 14px;
+        border-color: rgba(23,23,26,.08);
+        box-shadow: 0 7px 20px rgba(24,24,28,.06);
+      }
+      .mobile-menu {
+        top: calc(var(--header-h) + 8px);
+        left: 10px;
+        right: 10px;
+        padding: 8px;
+        border-radius: 18px;
+        background: #fff;
+        box-shadow: 0 20px 56px rgba(28,25,33,.15);
+      }
+      .mobile-nav-group { border-radius: 14px; }
+      .mobile-nav-trigger,
+      .mobile-menu > a {
+        min-height: 52px;
+        padding: 13px 14px;
+        border-radius: 13px;
+        font-size: .9rem;
+      }
+      .mobile-nav-trigger[aria-expanded="true"] {
+        background: #fff5bf;
+        color: #211d00;
+      }
+      .mobile-submenu {
+        gap: 3px;
+        margin: 4px 0 8px;
+        padding: 8px;
+        border-radius: 14px;
+        background: #fffdf4;
+        border: 1px solid rgba(225,183,0,.12);
+      }
+      .mobile-submenu strong {
+        margin: 10px 8px 5px;
+        color: #816900;
+        font-size: .64rem;
+      }
+      .mobile-submenu a {
+        min-height: 44px;
+        padding: 9px 10px;
+        border-radius: 11px;
+        font-size: .84rem;
+      }
+      .mobile-submenu a:active { background: var(--kb-yellow-soft); }
+
+      /* Hero: simpler composition, left aligned, clear priority */
+      .hero {
+        background:
+          radial-gradient(circle at 88% 18%, rgba(255,203,5,.16), transparent 24%),
+          linear-gradient(180deg, #fff 0%, #fffdf4 100%);
+      }
+      .hero::before {
+        width: 360px;
+        height: 360px;
+        right: -230px;
+        top: -170px;
+        background: rgba(255,203,5,.12);
+      }
+      .hero-grid {
+        min-height: auto;
+        grid-template-columns: 1fr;
+        gap: 24px;
+        padding: 34px 0 38px;
+        text-align: left;
+      }
+      .hero-copy,
+      .hero-lead { margin-inline: 0; }
+      .eyebrow {
+        margin-inline: 0;
+        min-height: 34px;
+        padding: 0 12px;
+        font-size: .68rem;
+      }
+      h1 {
+        margin-top: 20px;
+        max-width: 100%;
+        font-size: clamp(2.35rem, 11vw, 3.15rem);
+        line-height: 1.02;
+        letter-spacing: -.045em;
+      }
+      .accent::after {
+        bottom: -5px;
+        height: 4px;
+      }
+      .hero-lead {
+        margin-top: 23px;
+        max-width: 34rem;
+        font-size: .95rem;
+        line-height: 1.62;
+      }
+      .hero-actions {
+        margin-top: 26px;
+        gap: 10px;
+        flex-direction: column;
+      }
+      .btn {
+        width: 100%;
+        min-height: 54px;
+        border-radius: 15px;
+        padding-inline: 18px;
+      }
+      .btn-primary { box-shadow: 0 12px 28px rgba(205,163,0,.18); }
+      .btn-secondary { box-shadow: none; }
+      .trust-row {
+        display: grid;
+        grid-template-columns: 1fr;
+        justify-content: stretch;
+        gap: 8px;
+        margin-top: 22px;
+      }
+      .trust-item {
+        min-height: 42px;
+        padding: 7px 10px;
+        border-radius: 13px;
+        background: #fff;
+        border: 1px solid rgba(23,23,26,.07);
+        font-size: .76rem;
+      }
+      .trust-icon {
+        width: 26px;
+        height: 26px;
+        border-radius: 9px;
+      }
+
+      /* Hero visual: reduced footprint, still branded */
+      .hero-visual {
+        min-height: 360px;
+        margin-top: 0;
+      }
+      .hero-campaign-v6 {
+        min-height: 360px;
+      }
+      .hero-campaign-v6::before {
+        inset: 18px 2px 26px 16px;
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at 82% 14%, rgba(255,203,5,.98) 0 58px, transparent 59px),
+          linear-gradient(145deg, #fff8c9 0%, #ffcf18 100%);
+        box-shadow: 0 24px 55px rgba(160,128,0,.15);
+      }
+      .hero-campaign-v6::after { display: none; }
+      .campaign-card-v6 {
+        width: min(250px, 70%);
+        border-radius: 22px;
+        padding: 5px;
+        box-shadow: 0 24px 55px rgba(30,20,42,.18);
+      }
+      .campaign-card-v6 img { border-radius: 17px; }
+      .campaign-chip-v6 {
+        min-width: 132px;
+        padding: 8px 9px;
+        border-radius: 13px;
+      }
+      .campaign-chip-v6.one { left: 0; top: 48px; }
+      .campaign-chip-v6.two { right: 0; bottom: 42px; }
+      .campaign-caption-v6 {
+        left: 12px;
+        bottom: 20px;
+        padding: 7px 9px;
+        border-radius: 10px;
+      }
+
+      /* Process: one consistent card rhythm */
+      .process-wrap {
+        margin-top: 0;
+        padding: 12px 0 40px;
+        background: #fff;
+      }
+      .process-panel {
+        gap: 10px;
+        padding: 10px;
+        border: 0;
+        border-radius: 20px;
+        background: #fffaf0;
+        box-shadow: none;
+      }
+      .process-intro {
+        padding: 22px 20px;
+        border-radius: 16px;
+        background: #18181b;
+      }
+      .process-intro strong {
+        font-size: 1.08rem;
+        line-height: 1.4;
+      }
+      .process-card,
+      .process-card:nth-of-type(2),
+      .process-card:nth-of-type(4) {
+        min-height: auto;
+        padding: 18px;
+        border: 1px solid rgba(23,23,26,.07);
+        border-radius: 16px;
+        background: #fff;
+      }
+      .process-head { margin-bottom: 13px; }
+      .step { width: 38px; height: 38px; }
+      .step-icon { width: 36px; height: 36px; }
+      .process-card strong { font-size: .92rem; }
+      .process-card p { font-size: .78rem; line-height: 1.55; }
+
+      /* Sections: more whitespace, stable cards */
+      .loan-products {
+        padding: 44px 0 50px;
+        background: #fff;
+      }
+      .section-head {
+        gap: 14px;
+        margin-bottom: 22px;
+      }
+      .section-title {
+        margin-top: 7px;
+        font-size: clamp(1.85rem, 8vw, 2.3rem);
+        line-height: 1.08;
+      }
+      .section-copy {
+        font-size: .88rem;
+        line-height: 1.62;
+      }
+      .loan-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .loan-card {
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(24,24,28,.055);
+      }
+      .loan-media { aspect-ratio: 16 / 8.4; }
+      .loan-body {
+        min-height: auto;
+        padding: 18px;
+      }
+      .loan-label { min-height: 25px; }
+      .loan-card h3 {
+        max-width: 100%;
+        margin-top: 11px;
+        font-size: 1rem;
+      }
+      .loan-more { margin-top: 16px; }
+      .loan-source-note {
+        margin-top: 16px;
+        font-size: .68rem;
+        line-height: 1.55;
+      }
+
+      /* Footer: clean vertical hierarchy, no cramped columns */
+      .kb-official-footer {
+        padding: 38px 0 26px;
+        background: #fffdf6;
+      }
+      .kb-footer-top { padding-bottom: 22px; }
+      .kb-footer-brand {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .kb-footer-logo-img { width: 150px; }
+      .kb-footer-page { padding-top: 0; font-size: .82rem; }
+      .kb-footer-directory {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 26px 0 30px;
+      }
+      .kb-footer-group {
+        padding: 18px;
+        border: 1px solid rgba(23,23,26,.07);
+        border-radius: 16px;
+        background: #fff;
+      }
+      .kb-footer-group h3 { margin-bottom: 10px; }
+      .kb-footer-group a {
+        width: 100%;
+        min-height: 42px;
+        display: flex;
+        align-items: center;
+        margin-top: 2px;
+        font-size: .84rem;
+      }
+      .kb-footer-support {
+        gap: 18px;
+        padding: 28px 0;
+      }
+      .kb-footer-help {
+        min-height: auto;
+        align-items: flex-start;
+        padding: 22px 18px;
+        border-radius: 18px;
+      }
+      .kb-footer-help h3 { font-size: 1.45rem; }
+      .kb-footer-support-link {
+        min-height: 46px;
+        padding: 11px 13px;
+      }
+      .kb-footer-callcenter {
+        flex-basis: 76px;
+        width: 76px;
+      }
+      .kb-footer-callcenter img,
+      .kb-callcenter-fallback {
+        width: 72px;
+        height: 72px;
+      }
+      .kb-footer-company { padding: 0; }
+      .kb-footer-socials a {
+        width: 42px;
+        height: 42px;
+      }
+      .kb-footer-office { margin-top: 22px; }
+      .kb-footer-contacts {
+        flex-direction: column;
+        gap: 9px;
+      }
+      .kb-footer-contacts a,
+      .kb-footer-contacts span {
+        min-height: 42px;
+      }
+      .kb-footer-legal {
+        padding-top: 22px;
+        font-size: .69rem;
+        line-height: 1.62;
+      }
+
+      /* Thumb-zone CTA */
+      .mobile-sticky-cta {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 95;
+        display: block;
+        padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+        background: rgba(255,255,255,.94);
+        border-top: 1px solid rgba(23,23,26,.08);
+        backdrop-filter: blur(16px) saturate(145%);
+        box-shadow: 0 -10px 30px rgba(24,24,28,.08);
+      }
+      .mobile-sticky-cta a {
+        min-height: 54px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        border-radius: 15px;
+        background: var(--kb-yellow);
+        color: #211d00;
+        font-size: .94rem;
+        font-weight: 850;
+        box-shadow: 0 10px 24px rgba(205,163,0,.22);
+      }
+      .mobile-sticky-cta a:active { transform: translateY(1px); }
+    }
+
+    @media (max-width: 360px) {
+      .container { width: min(calc(100% - 24px), var(--container)); }
+      h1 { font-size: 2.2rem; }
+      .campaign-card-v6 { width: min(232px, 72%); }
+      .campaign-chip-v6 { min-width: 122px; }
+      .kb-footer-callcenter { display: none; }
+    }
+
+
+
+    /* =========================================================
+       ADD-ON — KB Bank Contact Hub + Live Chat
+       Isolated scope: kb-chat-* only. Existing design untouched.
+       ========================================================= */
+    .kb-chat {
+      --kb-chat-yellow: #ffcb05;
+      --kb-chat-yellow-hover: #ffd52d;
+      --kb-chat-panel: #5b4d49;
+      --kb-chat-panel-deep: #514541;
+      --kb-chat-panel-line: rgba(255,255,255,.075);
+      --kb-chat-white: #fff;
+      --kb-chat-ink: #17171a;
+      --kb-chat-muted: #6c6c74;
+      --kb-chat-line: rgba(23,23,26,.10);
+      position: fixed;
+      right: 22px;
+      bottom: 22px;
+      z-index: 120;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .kb-chat-launcher {
+      min-width: 198px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px 0 12px;
+      border: 0;
+      border-radius: 13px;
+      background: var(--kb-chat-panel);
+      color: #fff;
+      box-shadow: 0 14px 34px rgba(27,20,18,.18);
+      cursor: pointer;
+      transition: transform .2s var(--ease), background .2s ease, box-shadow .2s ease;
+    }
+    .kb-chat-launcher:hover {
+      transform: translateY(-1px);
+      background: var(--kb-chat-panel-deep);
+      box-shadow: 0 18px 38px rgba(27,20,18,.22);
+    }
+    .kb-chat-launcher-main {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      font-size: .96rem;
+      font-weight: 650;
+      white-space: nowrap;
+    }
+    .kb-chat-headset {
+      width: 22px;
+      height: 22px;
+      flex: 0 0 auto;
+      color: var(--kb-chat-yellow);
+    }
+    .kb-chat-launcher-chevron,
+    .kb-chat-menu-chevron {
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      color: rgba(255,255,255,.92);
+      transition: transform .2s ease;
+    }
+
+    .kb-chat-unread {
+      position: absolute;
+      top: -5px;
+      left: -5px;
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      display: grid;
+      place-items: center;
+      border: 2px solid #fff;
+      border-radius: 999px;
+      background: #d92d20;
+      color: #fff;
+      font-size: .6rem;
+      font-weight: 850;
+      line-height: 1;
+    }
+
+    .kb-chat-contact-menu {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: 230px;
+      overflow: hidden;
+      border-radius: 15px;
+      background: var(--kb-chat-panel);
+      color: #fff;
+      box-shadow: 0 24px 60px rgba(27,20,18,.24);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px) scale(.985);
+      transform-origin: right bottom;
+      pointer-events: none;
+      transition: opacity .18s ease, transform .22s var(--ease), visibility .18s ease;
+    }
+    .kb-chat.is-menu-open .kb-chat-contact-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    .kb-chat.is-menu-open .kb-chat-launcher {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .kb-chat-menu-head {
+      width: 100%;
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px 0 12px;
+      border: 0;
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      text-align: left;
+    }
+    .kb-chat-menu-head span {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-size: .96rem;
+      font-weight: 650;
+    }
+    .kb-chat-menu-head .kb-chat-headset { width: 22px; height: 22px; }
+    .kb-chat-menu-head .kb-chat-menu-chevron { transform: rotate(180deg); }
+
+    .kb-chat-contact-list {
+      margin: 0;
+      padding: 0 13px 12px;
+      list-style: none;
+    }
+    .kb-chat-contact-item {
+      min-height: 50px;
+      display: grid;
+      grid-template-columns: 25px minmax(0,1fr) 18px;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 0 0;
+      border: 0;
+      border-top: 1px solid var(--kb-chat-panel-line);
+      background: transparent;
+      color: #fff;
+      text-align: left;
+      font: inherit;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background .16s ease, padding .16s ease;
+    }
+    .kb-chat-contact-item:hover,
+    .kb-chat-contact-item:focus-visible {
+      background: rgba(255,255,255,.055);
+      padding-inline: 6px;
+      border-radius: 9px;
+    }
+    .kb-chat-contact-item svg {
+      width: 22px;
+      height: 22px;
+      color: rgba(255,255,255,.95);
+    }
+    .kb-chat-contact-item .kb-chat-item-copy {
+      min-width: 0;
+      font-size: .91rem;
+      line-height: 1.2;
+      font-weight: 520;
+    }
+    .kb-chat-contact-item .kb-chat-item-copy small {
+      display: block;
+      margin-top: 3px;
+      color: rgba(255,255,255,.58);
+      font-size: .64rem;
+      font-weight: 560;
+    }
+    .kb-chat-contact-item .kb-chat-item-arrow {
+      width: 16px;
+      height: 16px;
+      color: rgba(255,255,255,.92);
+    }
+    .kb-chat-contact-item.kb-chat-live-entry svg:first-child {
+      color: var(--kb-chat-yellow);
+    }
+    .kb-chat-contact-item.kb-chat-live-entry .kb-chat-item-copy {
+      font-weight: 680;
+    }
+    .kb-chat-contact-item.kb-chat-live-entry .kb-chat-item-copy small {
+      color: rgba(255,203,5,.82);
+    }
+
+    .kb-chat-panel {
+      position: absolute;
+      right: 0;
+      bottom: 0;
+      width: min(380px, calc(100vw - 32px));
+      height: min(570px, calc(100dvh - 120px));
+      display: grid;
+      grid-template-rows: auto auto 1fr auto auto;
+      overflow: hidden;
+      border: 1px solid rgba(23,23,26,.10);
+      border-radius: 22px;
+      background: #fff;
+      box-shadow: 0 30px 80px rgba(22,19,27,.24);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(10px) scale(.985);
+      transform-origin: right bottom;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .24s var(--ease), visibility .2s ease;
+    }
+    .kb-chat.is-chat-open .kb-chat-panel {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    .kb-chat.is-chat-open .kb-chat-launcher,
+    .kb-chat.is-chat-open .kb-chat-contact-menu {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .kb-chat-header {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      padding: 15px;
+      background: var(--kb-chat-panel);
+      color: #fff;
+    }
+    .kb-chat-avatar {
+      flex: 0 0 auto;
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: rgba(255,255,255,.1);
+      color: var(--kb-chat-yellow);
+    }
+    .kb-chat-avatar svg { width: 23px; height: 23px; }
+    .kb-chat-heading { min-width: 0; flex: 1; }
+    .kb-chat-heading strong {
+      display: block;
+      font-size: .92rem;
+      line-height: 1.25;
+    }
+    .kb-chat-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
+      color: rgba(255,255,255,.68);
+      font-size: .68rem;
+      font-weight: 620;
+    }
+    .kb-chat-status::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #6dd89a;
+      box-shadow: 0 0 0 3px rgba(109,216,154,.12);
+    }
+    .kb-chat-close {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 11px;
+      background: rgba(255,255,255,.09);
+      color: #fff;
+      cursor: pointer;
+    }
+    .kb-chat-close:hover { background: rgba(255,255,255,.15); }
+    .kb-chat-close svg { width: 18px; height: 18px; }
+
+    .kb-chat-security {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--kb-chat-line);
+      background: #fffdf4;
+      color: #655600;
+      font-size: .67rem;
+      font-weight: 650;
+      line-height: 1.48;
+    }
+    .kb-chat-security svg { width: 15px; height: 15px; flex: 0 0 auto; margin-top: 1px; }
+
+    .kb-chat-messages {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 16px 14px;
+      background: #f8f8fa;
+      scrollbar-width: thin;
+    }
+    .kb-chat-day {
+      width: fit-content;
+      margin: 0 auto 14px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #ececef;
+      color: #76767e;
+      font-size: .62rem;
+      font-weight: 700;
+    }
+    .kb-chat-row { display: flex; margin-top: 10px; }
+    .kb-chat-row.is-user { justify-content: flex-end; }
+    .kb-chat-bubble {
+      max-width: 84%;
+      padding: 10px 12px;
+      border-radius: 16px 16px 16px 5px;
+      background: #fff;
+      color: #323238;
+      box-shadow: 0 4px 14px rgba(23,23,26,.06);
+      font-size: .78rem;
+      line-height: 1.55;
+      word-break: break-word;
+    }
+    .kb-chat-row.is-user .kb-chat-bubble {
+      border-radius: 16px 16px 5px 16px;
+      background: var(--kb-chat-yellow);
+      color: #211d00;
+      box-shadow: 0 5px 15px rgba(205,163,0,.13);
+    }
+    .kb-chat-time {
+      display: block;
+      margin-top: 5px;
+      color: #8a8a91;
+      font-size: .58rem;
+      font-weight: 650;
+    }
+    .kb-chat-row.is-user .kb-chat-time { color: rgba(33,29,0,.58); text-align: right; }
+
+    .kb-chat-quick {
+      display: flex;
+      gap: 7px;
+      overflow-x: auto;
+      padding: 10px 12px;
+      border-top: 1px solid var(--kb-chat-line);
+      background: #fff;
+      scrollbar-width: none;
+    }
+    .kb-chat-quick::-webkit-scrollbar { display: none; }
+    .kb-chat-quick button {
+      flex: 0 0 auto;
+      min-height: 34px;
+      padding: 0 11px;
+      border: 1px solid rgba(225,183,0,.24);
+      border-radius: 999px;
+      background: #fffaf0;
+      color: #554800;
+      font-size: .68rem;
+      font-weight: 760;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .kb-chat-quick button:hover { background: #fff3b8; }
+
+    .kb-chat-form {
+      display: grid;
+      grid-template-columns: 1fr 42px;
+      gap: 8px;
+      padding: 11px 12px 12px;
+      border-top: 1px solid var(--kb-chat-line);
+      background: #fff;
+    }
+    .kb-chat-input {
+      width: 100%;
+      min-width: 0;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid rgba(23,23,26,.12);
+      border-radius: 13px;
+      background: #fff;
+      color: var(--kb-chat-ink);
+      font: inherit;
+      font-size: .78rem;
+      outline: none;
+    }
+    .kb-chat-input:focus {
+      border-color: rgba(225,183,0,.7);
+      box-shadow: 0 0 0 3px rgba(255,203,5,.16);
+    }
+    .kb-chat-send {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-radius: 13px;
+      background: var(--kb-chat-yellow);
+      color: #211d00;
+      cursor: pointer;
+    }
+    .kb-chat-send:disabled { opacity: .45; cursor: not-allowed; }
+    .kb-chat-send svg { width: 18px; height: 18px; }
+
+    @media (max-width: 620px) {
+      .kb-chat {
+        right: 10px;
+        bottom: calc(78px + env(safe-area-inset-bottom));
+      }
+      .kb-chat-launcher { min-width: 198px; height: 48px; }
+      .kb-chat-contact-menu { width: min(230px, calc(100vw - 20px)); }
+      .kb-chat-panel {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: calc(78px + env(safe-area-inset-bottom));
+        width: auto;
+        height: min(590px, calc(100dvh - 102px));
+        border-radius: 20px;
+      }
+      .kb-chat-header { padding: 14px; }
+      .kb-chat-messages { padding: 14px 12px; }
+      .kb-chat-bubble { max-width: 88%; }
+      .kb-chat-input { font-size: 16px; }
+    }
+
+    @media (max-width: 360px) {
+      .kb-chat-launcher { min-width: 184px; }
+      .kb-chat-contact-menu { width: 220px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .kb-chat-launcher,
+      .kb-chat-contact-menu,
+      .kb-chat-panel { transition: none; }
+    }
+
+</style>
+
+  <style id="kbHeroLegacyRemoval">
+    /* Legacy KBstar campaign visual removed.
+       This stage is reserved only for images supplied by Admin Panel. */
+    .hero-campaign-v6.kb-hero-dynamic-only {
+      width: min(520px, 100%) !important;
+      min-height: 0 !important;
+      margin-inline: auto !important;
+      display: grid !important;
+      place-items: center !important;
+      background: transparent !important;
+      isolation: auto !important;
+      animation: none !important;
+      transform: none !important;
+    }
+
+    .hero-campaign-v6.kb-hero-dynamic-only::before,
+    .hero-campaign-v6.kb-hero-dynamic-only::after {
+      content: none !important;
+      display: none !important;
+    }
+
+    .hero-campaign-v6.kb-hero-dynamic-only .campaign-card-v6 {
+      width: min(430px, 100%) !important;
+      aspect-ratio: 4 / 5 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      border: 0 !important;
+      border-radius: 24px !important;
+      background: #fff !important;
+      box-shadow: 0 18px 48px rgba(24,24,27,.10) !important;
+      transform: none !important;
+      animation: none !important;
+    }
+
+    .hero-campaign-v6.kb-hero-dynamic-only .campaign-card-v6[hidden] {
+      display: none !important;
+    }
+
+    .hero-campaign-v6.kb-hero-dynamic-only .campaign-card-v6 img {
+      display: block !important;
+      width: 100% !important;
+      height: 100% !important;
+      max-width: 100% !important;
+      max-height: 100% !important;
+      object-fit: contain !important;
+      object-position: center !important;
+      border-radius: 24px !important;
+      background: #fff !important;
+      transform: none !important;
+      animation: none !important;
+    }
+
+    @media (max-width: 620px) {
+      .hero-campaign-v6.kb-hero-dynamic-only {
+        width: 100% !important;
+      }
+      .hero-campaign-v6.kb-hero-dynamic-only .campaign-card-v6 {
+        width: min(360px, 92vw) !important;
+        border-radius: 20px !important;
+      }
+      .hero-campaign-v6.kb-hero-dynamic-only .campaign-card-v6 img {
+        border-radius: 20px !important;
+      }
+    }
+  </style>
+
+
+  <style id="kbLatestInfoSectionStyles">
+    /* =========================================================
+       KB BANK — SIARAN PERS / INFO TERBARU
+       Scoped replacement for the previous #proses section only.
+       ========================================================= */
+    .kb-latest-section {
+      position: relative;
+      z-index: 10;
+      padding: 46px 0 54px;
+      background:
+        linear-gradient(180deg, rgba(255,250,228,.58) 0, rgba(255,255,255,0) 92px),
+        #fff;
+      color: #171719;
+    }
+
+    .kb-latest-layout {
+      display: grid;
+      grid-template-columns: minmax(330px, .88fr) minmax(0, 1.82fr);
+      gap: clamp(26px, 3.2vw, 54px);
+      align-items: start;
+    }
+
+    .kb-latest-heading {
+      min-height: 34px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin: 0 0 24px;
+      color: #8a632d;
+    }
+
+    .kb-latest-heading-icon {
+      width: 23px;
+      height: 23px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+    }
+
+    .kb-latest-heading-icon svg {
+      width: 21px;
+      height: 21px;
+      display: block;
+    }
+
+    .kb-latest-heading h2 {
+      margin: 0;
+      font-size: clamp(1rem, 1.05vw, 1.12rem);
+      line-height: 1.2;
+      font-weight: 720;
+      letter-spacing: -.015em;
+      color: inherit;
+    }
+
+    .kb-press-column {
+      min-width: 0;
+      padding-right: clamp(0px, 1vw, 10px);
+    }
+
+    .kb-press-list {
+      border-top: 1px solid transparent;
+    }
+
+    .kb-press-item {
+      min-height: 104px;
+      padding: 13px 0 23px;
+      border-bottom: 1px solid #e7e4e1;
+    }
+
+    .kb-press-item time {
+      display: block;
+      margin-bottom: 10px;
+      color: #7b7b81;
+      font-size: .74rem;
+      font-weight: 500;
+      line-height: 1.4;
+    }
+
+    .kb-press-item a {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      color: #432c24;
+      text-decoration: none;
+      font-size: clamp(.88rem, .92vw, 1rem);
+      font-weight: 560;
+      line-height: 1.55;
+      letter-spacing: -.012em;
+      transition: color .18s ease;
+    }
+
+    .kb-press-item a:hover {
+      color: #c77a00;
+    }
+
+    .kb-section-link-row {
+      display: flex;
+      justify-content: flex-end;
+      padding-top: 27px;
+    }
+
+    .kb-text-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      color: #ee9900;
+      text-decoration: none;
+      font-size: .82rem;
+      font-weight: 560;
+      line-height: 1;
+      white-space: nowrap;
+      transition: color .18s ease, gap .18s ease;
+    }
+
+    .kb-text-link svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .kb-text-link:hover {
+      color: #bd7600;
+      gap: 7px;
+    }
+
+    .kb-market-column {
+      min-width: 0;
+    }
+
+    .kb-market-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+
+    .kb-market-card {
+      min-width: 0;
+      min-height: 458px;
+      display: flex;
+      flex-direction: column;
+      padding: 18px 18px 17px;
+      border: 1px solid #e9e6e3;
+      border-radius: 13px;
+      background: #fff;
+      box-shadow:
+        0 2px 4px rgba(24,18,13,.025),
+        0 7px 18px rgba(24,18,13,.045);
+    }
+
+    .kb-card-title {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      margin-bottom: 20px;
+      color: #60483e;
+    }
+
+    .kb-card-title h3 {
+      margin: 0;
+      color: inherit;
+      font-size: clamp(1.28rem, 1.55vw, 1.65rem);
+      font-weight: 480;
+      line-height: 1;
+      letter-spacing: -.025em;
+    }
+
+    .kb-card-icon {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      border-radius: 4px;
+      background: #f2efee;
+      color: #776b67;
+    }
+
+    .kb-card-icon svg {
+      width: 21px;
+      height: 21px;
+    }
+
+    .kb-rate-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      margin-bottom: 14px;
+      padding: 8px;
+      border-radius: 5px;
+      background: #f7f7f7;
+    }
+
+    .kb-rate-tab {
+      min-height: 40px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: #8a8584;
+      font: inherit;
+      font-size: .84rem;
+      font-weight: 620;
+      cursor: default;
+    }
+
+    .kb-rate-tab.is-active {
+      background: linear-gradient(180deg, #ffbf22 0%, #ffad00 100%);
+      color: #1c1600;
+      box-shadow: 0 4px 10px rgba(232,155,0,.23);
+    }
+
+    .kb-rate-tab:disabled {
+      opacity: 1;
+    }
+
+    .kb-rate-table-wrap {
+      min-width: 0;
+      overflow-x: auto;
+    }
+
+    .kb-rate-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    .kb-rate-table th,
+    .kb-rate-table td {
+      padding: 13px 7px;
+      border-bottom: 1px solid #e8e5e3;
+      color: #161616;
+      font-size: .76rem;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    .kb-rate-table th {
+      font-weight: 640;
+    }
+
+    .kb-rate-table th:first-child,
+    .kb-rate-table td:first-child {
+      width: 58%;
+      padding-left: 0;
+      text-align: left;
+    }
+
+    .kb-rate-table th:last-child,
+    .kb-rate-table td:last-child {
+      padding-right: 0;
+    }
+
+    .kb-currency {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 90px;
+    }
+
+    .kb-currency img {
+      width: 26px;
+      height: 26px;
+      flex: 0 0 auto;
+      display: block;
+      border: 1px solid rgba(23,23,26,.07);
+      border-radius: 50%;
+      object-fit: cover;
+      box-shadow: 0 2px 6px rgba(24,18,13,.08);
+    }
+
+    .kb-currency strong {
+      font-size: .88rem;
+      font-weight: 520;
+    }
+
+    .kb-card-footer {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 20px;
+      margin-top: auto;
+      padding-top: 22px;
+    }
+
+    .kb-card-footer p {
+      margin: 0;
+      color: #1e1e1e;
+      font-size: .75rem;
+      line-height: 1.45;
+    }
+
+    .kb-card-footer p strong {
+      font-weight: 520;
+    }
+
+    .kb-sbdk-subtitle {
+      margin: 2px 0 17px;
+      color: #4b3026;
+      font-size: .87rem;
+      font-weight: 540;
+    }
+
+    .kb-sbdk-block {
+      padding: 18px 0 19px;
+      border-top: 1px solid #e8e5e3;
+    }
+
+    .kb-sbdk-grid {
+      display: grid;
+      gap: 18px;
+    }
+
+    .kb-sbdk-grid-three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .kb-sbdk-grid-two {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      max-width: 76%;
+      margin-top: 19px;
+    }
+
+    .kb-sbdk-metric {
+      min-width: 0;
+    }
+
+    .kb-sbdk-metric span,
+    .kb-consumer-title {
+      display: block;
+      color: #171717;
+      font-size: .69rem;
+      font-weight: 520;
+      line-height: 1.38;
+    }
+
+    .kb-sbdk-metric strong {
+      display: block;
+      margin-top: 13px;
+      color: #0f0f10;
+      font-size: .91rem;
+      font-weight: 760;
+      line-height: 1;
+    }
+
+    .kb-consumer-block {
+      padding-top: 17px;
+      padding-bottom: 20px;
+    }
+
+    .kb-card-footer-end {
+      justify-content: flex-end;
+      padding-top: 19px;
+      border-top: 1px solid #e8e5e3;
+    }
+
+    .kb-text-link-static {
+      cursor: default;
+    }
+
+    @media (max-width: 1180px) {
+      .kb-latest-layout {
+        grid-template-columns: 1fr;
+        gap: 34px;
+      }
+
+      .kb-press-column {
+        padding-right: 0;
+      }
+
+      .kb-press-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 20px;
+      }
+
+      .kb-press-item {
+        min-height: 128px;
+        padding: 16px 0 22px;
+        border-top: 1px solid #e7e4e1;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .kb-latest-section {
+        padding: 34px 0 42px;
+      }
+
+      .kb-latest-layout {
+        gap: 32px;
+      }
+
+      .kb-latest-heading {
+        margin-bottom: 16px;
+      }
+
+      .kb-press-list,
+      .kb-market-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .kb-press-list {
+        gap: 0;
+      }
+
+      .kb-press-item {
+        min-height: 0;
+        padding: 15px 0 20px;
+        border-top: 0;
+      }
+
+      .kb-press-item:first-child {
+        border-top: 1px solid #e7e4e1;
+      }
+
+      .kb-market-card {
+        min-height: auto;
+        padding: 16px;
+        border-radius: 14px;
+      }
+
+      .kb-sbdk-grid-three {
+        grid-template-columns: 1fr 1fr;
+        row-gap: 24px;
+      }
+
+      .kb-sbdk-grid-two {
+        max-width: 100%;
+      }
+    }
+
+    @media (max-width: 430px) {
+      .kb-latest-section .container {
+        width: min(calc(100% - 24px), var(--container));
+      }
+
+      .kb-rate-table th:first-child,
+      .kb-rate-table td:first-child {
+        width: 52%;
+      }
+
+      .kb-card-footer {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .kb-card-footer .kb-text-link {
+        align-self: flex-end;
+      }
+
+      .kb-sbdk-grid-three,
+      .kb-sbdk-grid-two {
+        grid-template-columns: 1fr 1fr;
+        gap: 22px 16px;
+      }
+    }
+  </style>
+
+
+  <style id="kbTentangMenuFixStyles">
+    .mega-grid-tentang {
+      grid-template-columns:
+        minmax(190px, 1.05fr)
+        minmax(215px, 1.16fr)
+        minmax(190px, 1fr)
+        minmax(220px, 1.12fr);
+      gap: clamp(22px, 2.4vw, 38px);
+      align-items: start;
+    }
+
+    .kb-tentang-panel .mega-grid {
+      padding-top: 28px;
+      padding-bottom: 30px;
+    }
+
+    .kb-tentang-panel .mega-column a {
+      min-height: 32px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      font-size: .78rem;
+    }
+
+    .kb-tentang-panel .mega-kicker {
+      margin-bottom: 10px;
+    }
+
+    .kb-mega-kicker-secondary {
+      margin-top: 22px !important;
+    }
+
+    @media (max-width: 1200px) and (min-width: 1041px) {
+      .mega-grid-tentang {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .kb-tentang-panel .mega-column a {
+        font-size: .72rem;
+      }
+    }
+  </style>
+
+</head>
+<body>
+  <a class="skip-link" href="#content">Lewati ke konten</a>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a class="brand" href="#top" aria-label="KB Bank beranda">
+        <span class="brand-line" aria-hidden="true"></span>
+        <strong>KB Bank</strong>
+        <span>Digital Lending</span>
+      </a>
+
+      <nav class="nav-links kb-functional-nav" aria-label="Navigasi utama">
+        <div class="nav-dropdown">
+          <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="megaSolusi">
+            Solusi Untuk Anda
+            <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="nav-mega-panel" id="megaSolusi" hidden>
+            <div class="container mega-grid mega-grid-solusi">
+              <section class="mega-column">
+                <p class="mega-kicker">Solusi keseharian Anda</p>
+                <a href="https://www.kbbank.co.id/credit-card">Kartu Kredit</a>
+                <a href="https://www.kbbank.co.id/debit-card">Kartu Debit</a>
+                <a href="https://www.kbbank.co.id/bukopin-priority">KB Bank Prioritas</a>
+                <a href="https://www.kbbank.co.id/promotion">Promosi</a>
+              </section>
+              <section class="mega-column">
+                <p class="mega-kicker">Solusi Masa Depan Anda</p>
+                <a href="https://www.kbbank.co.id/savings">Simpanan</a>
+                <a href="https://www.kbbank.co.id/loan">Pinjaman</a>
+                <a href="https://www.kbbank.co.id/wealth-management">Wealth Management</a>
+              </section>
+              <section class="mega-column">
+                <p class="mega-kicker">Solusi Untuk Bisnis Anda</p>
+                <a href="https://www.kbbank.co.id/business-solution/umkm">UMKM</a>
+                <a href="https://www.kbbank.co.id/business-solution/komersial">Komersial</a>
+              </section>
+              <section class="mega-column">
+                <p class="mega-kicker">Layanan Terbaik Untuk Anda</p>
+                <a href="https://www.kbbank.co.id/individu-service">Layanan Individual</a>
+                <a href="https://www.kbbank.co.id/bisnis-service">Layanan Bisnis</a>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-dropdown">
+          <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="megaTentang">
+            Tentang Kami
+            <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="nav-mega-panel compact kb-tentang-panel" id="megaTentang" hidden>
+            <div class="container mega-grid mega-grid-tentang">
+              <section class="mega-column">
+                <p class="mega-kicker">Profil KB Bank</p>
+                <a href="https://www.kbbank.co.id/profile/history">Riwayat Singkat</a>
+                <a href="https://www.kbbank.co.id/profile/vision-mission">Visi dan Misi</a>
+                <a href="https://www.kbbank.co.id/profile/subsidiary">Anak Perusahaan</a>
+                <a href="https://www.kbbank.co.id/profile/corporate-culture">Budaya Perusahaan</a>
+                <a href="https://www.kbbank.co.id/profile/award">Penghargaan</a>
+                <a href="https://www.kbbank.co.id/profile/correspondent-bank">Bank Koresponden</a>
+                <a href="https://www.kbbank.co.id/profile/institute-bank">Lembaga Profesi Perusahaan</a>
+                <a href="https://www.kbbank.co.id/profile/contact-us">Hubungi Kami</a>
+              </section>
+
+              <section class="mega-column">
+                <p class="mega-kicker">Tata Kelola Perusahaan</p>
+                <a href="https://www.kbbank.co.id/corporate-governance/about">Tentang Tata Kelola Perusahaan</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/piagam">Piagam</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/guidelines">Pedoman</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/report">Laporan Tata Kelola</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/code-of-ethics">Kode Etik</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/whistleblowing-system">Whistleblowing System</a>
+                <a href="https://www.kbbank.co.id/corporate-governance/privacy-notice">Pemberitahuan Privasi</a>
+              </section>
+
+              <section class="mega-column">
+                <p class="mega-kicker">Struktur Manajemen</p>
+                <a href="https://www.kbbank.co.id/structure-corporate/komisaris">Dewan Komisaris</a>
+                <a href="https://www.kbbank.co.id/structure-corporate/direksi">Direksi</a>
+                <a href="https://www.kbbank.co.id/structure-corporate/komite">Komite</a>
+                <a href="https://www.kbbank.co.id/structure-corporate/sekretarisperusahaan">Sekretaris Perusahaan</a>
+                <a href="https://www.kbbank.co.id/structure-corporate/struktur-organisasi">Struktur Organisasi</a>
+              </section>
+
+              <section class="mega-column">
+                <p class="mega-kicker">Investor</p>
+                <a href="https://www.kbbank.co.id/investor">Hubungan Investor</a>
+
+                <p class="mega-kicker kb-mega-kicker-secondary">Tanggung Jawab Sosial</p>
+                <a href="https://www.kbbank.co.id/csr-policy">Kebijakan Tanggung Jawab Sosial Perusahaan</a>
+                <a href="https://www.kbbank.co.id/csr-activity">Pelaksanaan Tanggung Jawab Sosial Perusahaan</a>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <a href="https://www.kbbank.co.id/info-terbaru">Info Terbaru</a>
+
+        <div class="nav-dropdown">
+          <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="megaJaringan">
+            Jaringan
+            <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="nav-mega-panel compact" id="megaJaringan" hidden>
+            <div class="container mega-grid mega-grid-compact">
+              <section class="mega-column">
+                <p class="mega-kicker">Temukan KB Bank</p>
+                <a href="https://www.kbbank.co.id/network/kantor">Jaringan Kantor</a>
+                <a href="https://www.kbbank.co.id/network/atm">ATM</a>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <div class="nav-dropdown">
+          <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="megaKarir">
+            Karir
+            <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="nav-mega-panel compact" id="megaKarir" hidden>
+            <div class="container mega-grid mega-grid-compact">
+              <section class="mega-column">
+                <p class="mega-kicker">Karir di KB Bank</p>
+                <a href="https://www.kbbank.co.id/career-work">Bekerja di KB Bank</a>
+                <a href="https://www.kbbank.co.id/career-work">Jenjang Karir</a>
+                <a href="https://www.kbbank.co.id/career-jobs">Lowongan Pekerjaan</a>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <a href="https://www.kbbank.co.id/support-center">Layanan Nasabah</a>
+      </nav>
+
+      <button class="menu-toggle" type="button" aria-label="Buka menu" aria-controls="mobileMenu" aria-expanded="false">
+        <svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <nav class="mobile-menu" id="mobileMenu" aria-label="Navigasi mobile">
+    <div class="mobile-nav-group">
+      <button class="mobile-nav-trigger" type="button" aria-expanded="false" aria-controls="mobileSolusi">Solusi Untuk Anda <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="mobile-submenu" id="mobileSolusi" hidden>
+        <strong>Solusi keseharian Anda</strong>
+        <a href="https://www.kbbank.co.id/credit-card">Kartu Kredit</a>
+        <a href="https://www.kbbank.co.id/debit-card">Kartu Debit</a>
+        <a href="https://www.kbbank.co.id/bukopin-priority">KB Bank Prioritas</a>
+        <a href="https://www.kbbank.co.id/promotion">Promosi</a>
+        <strong>Solusi Masa Depan Anda</strong>
+        <a href="https://www.kbbank.co.id/savings">Simpanan</a>
+        <a href="https://www.kbbank.co.id/loan">Pinjaman</a>
+        <a href="https://www.kbbank.co.id/wealth-management">Wealth Management</a>
+        <strong>Solusi Untuk Bisnis Anda</strong>
+        <a href="https://www.kbbank.co.id/business-solution/umkm">UMKM</a>
+        <a href="https://www.kbbank.co.id/business-solution/komersial">Komersial</a>
+        <strong>Layanan Terbaik Untuk Anda</strong>
+        <a href="https://www.kbbank.co.id/individu-service">Layanan Individual</a>
+        <a href="https://www.kbbank.co.id/bisnis-service">Layanan Bisnis</a>
+      </div>
+    </div>
+
+    <div class="mobile-nav-group">
+      <button class="mobile-nav-trigger" type="button" aria-expanded="false" aria-controls="mobileTentang">Tentang Kami <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="mobile-submenu" id="mobileTentang" hidden>
+        <strong>Profil KB Bank</strong>
+        <a href="https://www.kbbank.co.id/profile/history">Riwayat Singkat</a>
+        <a href="https://www.kbbank.co.id/profile/vision-mission">Visi dan Misi</a>
+        <a href="https://www.kbbank.co.id/profile/subsidiary">Anak Perusahaan</a>
+        <a href="https://www.kbbank.co.id/profile/corporate-culture">Budaya Perusahaan</a>
+        <a href="https://www.kbbank.co.id/profile/award">Penghargaan</a>
+        <a href="https://www.kbbank.co.id/profile/correspondent-bank">Bank Koresponden</a>
+        <a href="https://www.kbbank.co.id/profile/institute-bank">Lembaga Profesi Perusahaan</a>
+        <a href="https://www.kbbank.co.id/profile/contact-us">Hubungi Kami</a>
+
+        <strong>Tata Kelola Perusahaan</strong>
+        <a href="https://www.kbbank.co.id/corporate-governance/about">Tentang Tata Kelola Perusahaan</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/piagam">Piagam</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/guidelines">Pedoman</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/report">Laporan Tata Kelola</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/code-of-ethics">Kode Etik</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/whistleblowing-system">Whistleblowing System</a>
+        <a href="https://www.kbbank.co.id/corporate-governance/privacy-notice">Pemberitahuan Privasi</a>
+
+        <strong>Struktur Manajemen</strong>
+        <a href="https://www.kbbank.co.id/structure-corporate/komisaris">Dewan Komisaris</a>
+        <a href="https://www.kbbank.co.id/structure-corporate/direksi">Direksi</a>
+        <a href="https://www.kbbank.co.id/structure-corporate/komite">Komite</a>
+        <a href="https://www.kbbank.co.id/structure-corporate/sekretarisperusahaan">Sekretaris Perusahaan</a>
+        <a href="https://www.kbbank.co.id/structure-corporate/struktur-organisasi">Struktur Organisasi</a>
+
+        <strong>Investor</strong>
+        <a href="https://www.kbbank.co.id/investor">Hubungan Investor</a>
+
+        <strong>Tanggung Jawab Sosial</strong>
+        <a href="https://www.kbbank.co.id/csr-policy">Kebijakan Tanggung Jawab Sosial Perusahaan</a>
+        <a href="https://www.kbbank.co.id/csr-activity">Pelaksanaan Tanggung Jawab Sosial Perusahaan</a>
+      </div>
+    </div>
+
+    <a href="https://www.kbbank.co.id/info-terbaru">Info Terbaru</a>
+
+    <div class="mobile-nav-group">
+      <button class="mobile-nav-trigger" type="button" aria-expanded="false" aria-controls="mobileJaringan">Jaringan <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="mobile-submenu" id="mobileJaringan" hidden>
+        <a href="https://www.kbbank.co.id/network/kantor">Jaringan Kantor</a>
+        <a href="https://www.kbbank.co.id/network/atm">ATM</a>
+      </div>
+    </div>
+
+    <div class="mobile-nav-group">
+      <button class="mobile-nav-trigger" type="button" aria-expanded="false" aria-controls="mobileKarir">Karir <svg class="nav-chevron" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m5 7.5 5 5 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      <div class="mobile-submenu" id="mobileKarir" hidden>
+        <a href="https://www.kbbank.co.id/career-work">Bekerja di KB Bank</a>
+        <a href="https://www.kbbank.co.id/career-work">Jenjang Karir</a>
+        <a href="https://www.kbbank.co.id/career-jobs">Lowongan Pekerjaan</a>
+      </div>
+    </div>
+
+    <a href="https://www.kbbank.co.id/support-center">Layanan Nasabah</a>
+  </nav>
+
+
+
+  <main id="content">
+    <section class="hero" id="top">
+      <div class="container hero-grid" id="pinjaman">
+        <div class="hero-copy reveal">
+          <div class="eyebrow">Solusi kebutuhan Anda</div>
+
+          <h1>
+            Kebutuhan Anda,<br>
+            <span class="accent">lebih mudah diajukan.</span>
+          </h1>
+
+          <p class="hero-lead">
+            Pengalaman pengajuan yang lebih ringkas, terarah, dan mudah dipahami.
+            Setiap permohonan tetap melalui verifikasi data dan analisis kelayakan
+            sesuai ketentuan yang berlaku.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#proses">
+              Ajukan Pinjaman
+              <span aria-hidden="true">→</span>
+            </a>
+            <a class="btn btn-secondary"
+               href="https://play.google.com/store/apps/details?id=com.kbBukopin.Kbstar"
+               target="_blank" rel="noopener noreferrer">
+              Kenali KBstar
+              <span aria-hidden="true">↗</span>
+            </a>
+          </div>
+
+          <div class="trust-row" aria-label="Karakter proses pengajuan">
+            <span class="trust-item"><span class="trust-icon">✓</span> Alur digital</span>
+            <span class="trust-item"><span class="trust-icon">✓</span> Verifikasi terstruktur</span>
+            <span class="trust-item"><span class="trust-icon">✓</span> Keputusan berdasarkan analisis</span>
+          </div>
+        </div>
+
+        <div class="hero-visual reveal" aria-label="Hero visual">
+          <div class="hero-campaign-v6 kb-hero-dynamic-only">
+            <div class="campaign-card-v6" data-kb-hero-card hidden>
+              <img data-kb-hero-dynamic alt="" decoding="async" hidden>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    
+    <section class="kb-latest-section" id="proses" aria-labelledby="kbLatestInfoTitle">
+      <div class="container kb-latest-layout">
+
+        <section class="kb-press-column" aria-labelledby="kbPressTitle">
+          <div class="kb-latest-heading">
+            <span class="kb-latest-heading-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 3.75h10.5L19 7.3v12.95H5V3.75Z" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
+                <path d="M15.3 3.9V7.6H19M8 9.4h7.8M8 12.6h7.8M8 15.8h5.4" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <h2 id="kbPressTitle">Siaran Pers</h2>
+          </div>
+
+          <div class="kb-press-list">
+            <article class="kb-press-item">
+              <time datetime="2026-08-10">10 Agustus 2026</time>
+              <a href="https://www.kbbank.co.id/press-conference" target="_blank" rel="noopener noreferrer">
+                KB Bank Raih Dua Penghargaan Bergensi di Bidang Layanan Perbankan dan Reputasi Korporasi, Bukti Penguatan Kepercayaan di Tengah Transformasi
+              </a>
+            </article>
+
+            <article class="kb-press-item">
+              <time datetime="2026-08-04">04 Agustus 2026</time>
+              <a href="https://www.kbbank.co.id/press-conference" target="_blank" rel="noopener noreferrer">
+                KB Bank Dorong Pemberdayaan Penyandang Disabilitas melalui Program KREASIK Bersama Terala Foundation
+              </a>
+            </article>
+
+            <article class="kb-press-item">
+              <time datetime="2026-07-22">22 Juli 2026</time>
+              <a href="https://www.kbbank.co.id/press-conference" target="_blank" rel="noopener noreferrer">
+                KB Bank Tanamkan Literasi Keuangan Sejak Dini melalui Program “Belajar Finansial Bareng KB Bank”
+              </a>
+            </article>
+          </div>
+
+          <div class="kb-section-link-row">
+            <a class="kb-text-link" href="https://www.kbbank.co.id/press-conference" target="_blank" rel="noopener noreferrer">
+              Selengkapnya
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m7.5 5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </a>
+          </div>
+        </section>
+
+        <section class="kb-market-column" aria-labelledby="kbLatestInfoTitle">
+          <div class="kb-latest-heading">
+            <span class="kb-latest-heading-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 3.75h10.5L19 7.3v12.95H5V3.75Z" stroke="currentColor" stroke-width="1.55" stroke-linejoin="round"/>
+                <path d="M15.3 3.9V7.6H19M8 9.4h7.8M8 12.6h7.8M8 15.8h5.4" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <h2 id="kbLatestInfoTitle">Info Terbaru</h2>
+          </div>
+
+          <div class="kb-market-grid">
+            <article class="kb-market-card kb-currency-card">
+              <header class="kb-card-title">
+                <span class="kb-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M18.7 8.3A7.7 7.7 0 0 0 6.2 6.1L4.5 7.8M5.3 15.7A7.7 7.7 0 0 0 17.8 18l1.7-1.8" stroke="currentColor" stroke-width="1.55" stroke-linecap="round"/>
+                    <path d="M4.5 4.8v3h3M19.5 19.2v-3h-3" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <h3>KURS</h3>
+              </header>
+
+              <div class="kb-rate-tabs" role="tablist" aria-label="Informasi kurs">
+                <button class="kb-rate-tab is-active" type="button" role="tab" aria-selected="true">Kurs Valas</button>
+                <button class="kb-rate-tab" type="button" role="tab" aria-selected="false" disabled>Kalkulator</button>
+              </div>
+
+              <div class="kb-rate-table-wrap">
+                <table class="kb-rate-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Mata Uang</th>
+                      <th scope="col">Jual</th>
+                      <th scope="col">Beli</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <span class="kb-currency">
+                          <img src="https://www.countryflags.com/wp-content/uploads/singapore-flag-png-large.png" alt="Bendera Singapura" loading="lazy" referrerpolicy="no-referrer">
+                          <strong>SGD</strong>
+                        </span>
+                      </td>
+                      <td>–</td>
+                      <td>–</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span class="kb-currency">
+                          <img src="https://www.countryflags.com/wp-content/uploads/united-states-of-america-flag-png-large.png" alt="Bendera Amerika Serikat" loading="lazy" referrerpolicy="no-referrer">
+                          <strong>USD</strong>
+                        </span>
+                      </td>
+                      <td>–</td>
+                      <td>–</td>
+                    </tr>
+                    <tr>
+                      <td>
+                        <span class="kb-currency">
+                          <img src="https://www.countryflags.com/wp-content/uploads/europe-flag-jpg-xl-768x512.jpg" alt="Bendera Uni Eropa" loading="lazy" referrerpolicy="no-referrer">
+                          <strong>EUR</strong>
+                        </span>
+                      </td>
+                      <td>–</td>
+                      <td>–</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <footer class="kb-card-footer">
+                <p><em>Terakhir diperbarui pada<br><strong>1/9/2026, 14:19</strong></em></p>
+                <a class="kb-text-link" href="https://www.kbbank.co.id/currency-info" target="_blank" rel="noopener noreferrer">
+                  Selengkapnya
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m7.5 5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+              </footer>
+            </article>
+
+            <article class="kb-market-card kb-sbdk-card">
+              <header class="kb-card-title">
+                <span class="kb-card-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <rect x="3.75" y="5.25" width="16.5" height="13.5" rx="1.8" stroke="currentColor" stroke-width="1.55"/>
+                    <path d="M7 9.25h10M7 12h2.3M11 12h2.3M15 12h2M7 14.75h2.3M11 14.75h2.3M15 14.75h2" stroke="currentColor" stroke-width="1.45" stroke-linecap="round"/>
+                  </svg>
+                </span>
+                <h3>SBDK</h3>
+              </header>
+
+              <p class="kb-sbdk-subtitle">Suku Bunga Dasar Kredit</p>
+
+              <div class="kb-sbdk-block">
+                <div class="kb-sbdk-grid kb-sbdk-grid-three">
+                  <div class="kb-sbdk-metric">
+                    <span>Kredit Korporasi</span>
+                    <strong>9.37%</strong>
+                  </div>
+                  <div class="kb-sbdk-metric">
+                    <span>Kredit Ritel</span>
+                    <strong>9.51%</strong>
+                  </div>
+                  <div class="kb-sbdk-metric">
+                    <span>Kredit Mikro</span>
+                    <strong>9.51%</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div class="kb-sbdk-block kb-consumer-block">
+                <span class="kb-consumer-title">Kredit Konsumsi</span>
+                <div class="kb-sbdk-grid kb-sbdk-grid-two">
+                  <div class="kb-sbdk-metric">
+                    <span>KPR</span>
+                    <strong>9.92%</strong>
+                  </div>
+                  <div class="kb-sbdk-metric">
+                    <span>Non-KPR</span>
+                    <strong>9.92%</strong>
+                  </div>
+                </div>
+              </div>
+
+              <footer class="kb-card-footer kb-card-footer-end">
+                <span class="kb-text-link kb-text-link-static" aria-label="Informasi SBDK selengkapnya">
+                  Selengkapnya
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="m7.5 5 5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+              </footer>
+            </article>
+          </div>
+        </section>
+
+      </div>
+    </section>
+
+
+
+    <section class="loan-products" id="jenis-pinjaman">
+      <div class="container">
+        <div class="section-head reveal">
+          <div>
+            <div class="section-kicker">Solusi masa depan Anda</div>
+            <h2 class="section-title">Pilih Jenis Pinjaman</h2>
+          </div>
+          <p class="section-copy">
+            Jelajahi kategori pinjaman KB Bank sesuai kebutuhan Anda. Detail persyaratan,
+            biaya, tenor, dan ketentuan produk perlu mengacu pada informasi resmi KB Bank.
+          </p>
+        </div>
+
+        <div class="loan-grid">
+          <article class="loan-card reveal">
+            <div class="loan-media">
+              <img src="https://api.kbbank.co.id//Compressed%20Image/New%20Image/H_M01090.jpg"
+                   alt="Kredit Serba Guna" loading="lazy">
+            </div>
+            <div class="loan-body">
+              <span class="loan-label">Pinjaman</span>
+              <h3>Kredit Serba Guna</h3>
+              <div class="loan-more">Lihat selengkapnya <span aria-hidden="true">→</span></div>
+            </div>
+          </article>
+
+          <article class="loan-card reveal">
+            <div class="loan-media">
+              <img src="https://api.kbbank.co.id//_default_upload_bucket/IDR04795.jpg"
+                   alt="Kredit PNS Aktif" loading="lazy">
+            </div>
+            <div class="loan-body">
+              <span class="loan-label">Pinjaman</span>
+              <h3>Kredit PNS Aktif</h3>
+              <div class="loan-more">Lihat selengkapnya <span aria-hidden="true">→</span></div>
+            </div>
+          </article>
+
+          <article class="loan-card reveal">
+            <div class="loan-media">
+              <img src="https://api.kbbank.co.id//_default_upload_bucket/Kredit%20pensiunan%20%281%29_4_3.jpg"
+                   alt="Kredit Pra Pensiun" loading="lazy">
+            </div>
+            <div class="loan-body">
+              <span class="loan-label">Pinjaman</span>
+              <h3>Kredit Pra Pensiun</h3>
+              <div class="loan-more">Lihat selengkapnya <span aria-hidden="true">→</span></div>
+            </div>
+          </article>
+
+          <article class="loan-card reveal">
+            <div class="loan-media">
+              <img src="https://api.kbbank.co.id//_default_upload_bucket/pensiun%20copy.jpg"
+                   alt="Kredit Pensiunan" loading="lazy">
+            </div>
+            <div class="loan-body">
+              <span class="loan-label">Pinjaman</span>
+              <h3>Kredit Pensiunan</h3>
+              <div class="loan-more">Lihat selengkapnya <span aria-hidden="true">→</span></div>
+            </div>
+          </article>
+
+          <article class="loan-card reveal">
+            <div class="loan-media">
+              <img src="https://api.kbbank.co.id//_default_upload_bucket/WhatsApp%20Image%202024-03-01%20at%2022.31.15_2.jpeg"
+                   alt="Kredit Kepemilikan Mobil" loading="lazy">
+            </div>
+            <div class="loan-body">
+              <span class="loan-label">Pinjaman</span>
+              <h3>Kredit Kepemilikan Mobil</h3>
+              <div class="loan-more">Lihat selengkapnya <span aria-hidden="true">→</span></div>
+            </div>
+          </article>
+
+          <article class="loan-card reveal">
+            <div class="loan-media">
+              <img src="https://api.kbbank.co.id//_default_upload_bucket/rumah%20copy_6.jpg"
+                   alt="Kredit Kepemilikan Rumah/Apartemen" loading="lazy">
+            </div>
+            <div class="loan-body">
+              <span class="loan-label">Pinjaman</span>
+              <h3>Kredit Kepemilikan Rumah/Apartemen</h3>
+              <div class="loan-more">Lihat selengkapnya <span aria-hidden="true">→</span></div>
+            </div>
+          </article>
+        </div>
+
+        <p class="loan-source-note">
+          Nama kategori dan gambar produk pada section ini mengikuti materi referensi KB Bank yang Anda berikan.
+          Tautan detail produk belum dipasang karena URL halaman detail masing-masing produk belum tersedia.
+        </p>
+      </div>
+    </section>
+
+
+  </main>
+
+  <!-- Official KB Bank footer — cleaned: legacy info strip and footnote removed -->
+  <footer class="kb-official-footer" id="footer-kb-bank" aria-labelledby="footerKbTitle">
+      <div class="container">
+        <div class="kb-footer-top reveal">
+          <div class="kb-footer-brand" aria-label="KB Bank — Pinjaman">
+            <div class="kb-footer-wordmark">
+              <img class="kb-footer-logo-img" src="https://www.kbbank.co.id/kb-logo-2.png" alt="KB Bank" loading="lazy"
+                   onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+              <span class="kb-footer-logo-fallback" hidden><span class="kb-footer-mark" aria-hidden="true">KB</span><strong>KB Bank</strong></span>
+            </div>
+            <span class="kb-footer-page" id="footerKbTitle"><span aria-hidden="true">›</span> Pinjaman</span>
+          </div>
+        </div>
+
+        <div class="kb-footer-directory reveal">
+          <section class="kb-footer-group">
+            <h3>Solusi keseharian Anda</h3>
+            <a href="https://www.kbbank.co.id/credit-card" target="_blank" rel="noopener noreferrer">Kartu Kredit</a>
+            <a href="https://www.kbbank.co.id/debit-card" target="_blank" rel="noopener noreferrer">Kartu Debit</a>
+            <a href="https://www.kbbank.co.id/bukopin-priority" target="_blank" rel="noopener noreferrer">KB Bank Prioritas</a>
+          </section>
+
+          <section class="kb-footer-group">
+            <h3>Solusi Untuk Bisnis Anda</h3>
+            <a href="https://www.kbbank.co.id/business-solution/umkm" target="_blank" rel="noopener noreferrer">UMKM</a>
+            <a href="https://www.kbbank.co.id/business-solution/komersial" target="_blank" rel="noopener noreferrer">Komersial</a>
+          </section>
+
+          <section class="kb-footer-group">
+            <h3>Karir</h3>
+            <a href="https://www.kbbank.co.id/career-work" target="_blank" rel="noopener noreferrer">Bekerja di KB Bank</a>
+            <a href="https://www.kbbank.co.id/career-work" target="_blank" rel="noopener noreferrer">Jenjang Karir</a>
+            <a href="https://www.kbbank.co.id/career-jobs" target="_blank" rel="noopener noreferrer">Lowongan Pekerjaan</a>
+          </section>
+
+          <section class="kb-footer-group">
+            <h3>Solusi Masa Depan Anda</h3>
+            <a href="https://www.kbbank.co.id/savings" target="_blank" rel="noopener noreferrer">Simpanan</a>
+            <a href="https://www.kbbank.co.id/loan" target="_blank" rel="noopener noreferrer">Pinjaman</a>
+            <a href="https://www.kbbank.co.id/wealth-management" target="_blank" rel="noopener noreferrer">Wealth Management</a>
+          </section>
+
+          <section class="kb-footer-group">
+            <h3>Layanan Terbaik Untuk Anda</h3>
+            <a href="https://www.kbbank.co.id/network/atm" target="_blank" rel="noopener noreferrer">ATM</a>
+            <a href="https://www.kbbank.co.id/individu-service/2133" target="_blank" rel="noopener noreferrer">Safe Deposit Box</a>
+            <a href="https://www.kbbank.co.id/individu-service" target="_blank" rel="noopener noreferrer">Lainnya</a>
+          </section>
+
+          <section class="kb-footer-group">
+            <h3>Inspirasi terkini</h3>
+            <a href="https://www.kbbank.co.id/inspiration" target="_blank" rel="noopener noreferrer">Lihat Artikel</a>
+            <a href="https://www.kbbank.co.id/individu-service" target="_blank" rel="noopener noreferrer">Promo Terbaik Bulan Ini</a>
+          </section>
+        </div>
+
+        <div class="kb-footer-support reveal">
+          <div class="kb-footer-help">
+            <div>
+              <span class="kb-footer-eyebrow">Layanan Nasabah</span>
+              <h3>Layanan Pengaduan</h3>
+              <a class="kb-footer-support-link" href="https://www.kbbank.co.id/support-center" target="_blank" rel="noopener noreferrer">
+                Buka layanan pengaduan <span aria-hidden="true">→</span>
+              </a>
+            </div>
+            <div class="kb-footer-callcenter" aria-hidden="true">
+              <img src="https://www.kbbank.co.id/static/media/call-center.1ab32fbe.png" alt="" loading="lazy"
+                   onerror="this.hidden=true;this.nextElementSibling.hidden=false">
+              <svg class="kb-callcenter-fallback" hidden viewBox="0 0 120 120" fill="none">
+                <path d="M24 63V52C24 31.6 40.6 15 61 15s37 16.6 37 37v11" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+                <rect x="13" y="55" width="24" height="32" rx="10" stroke="currentColor" stroke-width="7"/>
+                <rect x="85" y="55" width="24" height="32" rx="10" stroke="currentColor" stroke-width="7"/>
+                <path d="M98 83v5c0 12-9.7 21.7-21.7 21.7H69" stroke="currentColor" stroke-width="7" stroke-linecap="round"/>
+                <circle cx="61" cy="108" r="8" fill="currentColor"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="kb-footer-company">
+            <div class="kb-footer-social-block">
+              <p>Ikuti kami di:</p>
+              <div class="kb-footer-socials">
+                <a href="https://www.facebook.com/kbbank.id" target="_blank" rel="noopener noreferrer" aria-label="Facebook KB Bank">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 8h3V4.5c-.5-.1-2-.2-3.4-.2-2.9 0-4.9 1.8-4.9 5v2.8H5.5V16h3.2v8h4V16H16l.5-3.9h-3.8V9.7c0-1.1.3-1.7 1.3-1.7Z" fill="currentColor"/></svg>
+                </a>
+                <a href="https://x.com/kbbank_id" target="_blank" rel="noopener noreferrer" aria-label="X KB Bank">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.6 3H22l-7.4 8.5L23.3 21h-6.8l-5.3-6.9L5.1 21H1.7l7.9-9L1.3 3h7l4.8 6.3L18.6 3Zm-1.2 16.3h1.9L7.3 4.6H5.2l12.2 14.7Z" fill="currentColor"/></svg>
+                </a>
+                <a href="https://www.instagram.com/kbbank.id/" target="_blank" rel="noopener noreferrer" aria-label="Instagram KB Bank">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor"/></svg>
+                </a>
+                <a href="https://www.youtube.com/@kbbank_id" target="_blank" rel="noopener noreferrer" aria-label="YouTube KB Bank">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21.6 7.2a3 3 0 0 0-2.1-2.1C17.6 4.6 12 4.6 12 4.6s-5.6 0-7.5.5a3 3 0 0 0-2.1 2.1A31 31 0 0 0 2 12a31 31 0 0 0 .4 4.8 3 3 0 0 0 2.1 2.1c1.9.5 7.5.5 7.5.5s5.6 0 7.5-.5a3 3 0 0 0 2.1-2.1A31 31 0 0 0 22 12a31 31 0 0 0-.4-4.8ZM10 15.2V8.8l5.5 3.2L10 15.2Z" fill="currentColor"/></svg>
+                </a>
+              </div>
+            </div>
+
+            <address class="kb-footer-office">
+              <strong>Kantor Pusat</strong>
+              <span>Gedung KB Bank</span>
+              <span>Jl. MT. Haryono Kav. 50-51, Jakarta, 12770</span>
+            </address>
+
+            <div class="kb-footer-contacts">
+              <a href="tel:+62217988266">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.7 3.8.7.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.7 21 3 13.3 3 3.7c0-.6.4-1 1-1h3.3c.6 0 1 .4 1 1 0 1.3.2 2.6.7 3.8.1.4 0 .8-.2 1.1l-2.2 2.2Z" fill="currentColor"/></svg>
+                021 7988 266
+              </a>
+              <span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10v4H7V3Zm10 14v4H7v-4h10Zm2-9c1.1 0 2 .9 2 2v7h-3v-2H6v2H3v-7c0-1.1.9-2 2-2h14Zm-1 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z" fill="currentColor"/></svg>
+                021 7980 625
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="kb-footer-legal reveal">
+          <p>PT Bank KB Indonesia Tbk Berizin dan Diawasi oleh Otoritas Jasa Keuangan dan Bank Indonesia.</p>
+          <p>
+            PT Bank KB Indonesia Tbk merupakan peserta penjaminan LPS. Maksimum nilai simpanan yang dijamin LPS per nasabah per Bank adalah Rp 2 miliar.
+            Untuk cek Tingkat Bunga Penjaminan LPS, <a href="https://apps.lps.go.id/BankPesertaLPSRate" target="_blank" rel="noopener noreferrer">klik di sini</a>.
+          </p>
+        </div>
+      </div>
+  </footer>
+
+
+
+  <!-- ADD-ON: KB Bank Contact Hub + Live Chat. Existing page structure remains unchanged. -->
+  <aside class="kb-chat" id="kbLiveChat" aria-label="Hubungi Kami KB Bank">
+    <button class="kb-chat-launcher" id="kbChatLauncher" type="button" aria-label="Buka menu Hubungi Kami" aria-controls="kbChatContactMenu" aria-expanded="false">
+      <span class="kb-chat-launcher-main">
+        <svg class="kb-chat-headset" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2M4 13a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2v-6H4Zm16 0h-2v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2ZM18 19c0 1.1-.9 2-2 2h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Hubungi Kami</span>
+      </span>
+      <svg class="kb-chat-launcher-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="kb-chat-unread" id="kbChatUnread" aria-label="1 pesan belum dibaca">1</span>
+    </button>
+
+    <section class="kb-chat-contact-menu" id="kbChatContactMenu" aria-label="Pilihan Hubungi Kami" hidden>
+      <button class="kb-chat-menu-head" id="kbChatMenuClose" type="button" aria-label="Tutup menu Hubungi Kami">
+        <span>
+          <svg class="kb-chat-headset" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13v-2a8 8 0 0 1 16 0v2M4 13a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2v-6H4Zm16 0h-2v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2ZM18 19c0 1.1-.9 2-2 2h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Hubungi Kami
+        </span>
+        <svg class="kb-chat-menu-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+
+      <ul class="kb-chat-contact-list">
+        <li>
+          <button class="kb-chat-contact-item kb-chat-live-entry" id="kbChatOpenLive" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-7l-4.8 3.5c-.5.4-1.2 0-1.2-.6V17H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 10h8M8 13h5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+            <span class="kb-chat-item-copy">Live Chat<small>Customer Service</small></span>
+            <svg class="kb-chat-item-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </li>
+        <li>
+          <a class="kb-chat-contact-item" href="tel:14005" aria-label="Telepon 14005">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7.1 3.5 4.6 4.8c-.8.4-1.2 1.3-1 2.2 1.2 5.8 5.7 10.3 11.5 11.5.9.2 1.8-.2 2.2-1l1.3-2.5-4-2-1.2 1.8a13.8 13.8 0 0 1-4.2-4.2L11 9.4l-1.9-4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="kb-chat-item-copy">14005</span>
+            <span aria-hidden="true"></span>
+          </a>
+        </li>
+        <li>
+          <a class="kb-chat-contact-item" href="https://www.kbbank.co.id/support-center" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 5-2 8 2 5-2v14l-5 2-8-2-5 2V6Zm5-2v14m8-12v14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="kb-chat-item-copy">Kantor Cabang</span>
+            <svg class="kb-chat-item-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </li>
+        <li>
+          <a class="kb-chat-contact-item" href="mailto:customer_care@kbbank.co.id">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="m4 7 8 6 8-6" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="kb-chat-item-copy">Kirim Email</span>
+            <svg class="kb-chat-item-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </li>
+        <li>
+          <a class="kb-chat-contact-item" href="https://www.kbbank.co.id/profile/contact-us" target="_blank" rel="noopener noreferrer" aria-label="Whistleblowing System">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4a7 7 0 1 0 7 7M12 2v4m-7.1-.9 2.8 2.8m-4.7 3.1h4m9.3-3.1 2.8-2.8M17 15l4-4m0 0v4m0-4h-4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="kb-chat-item-copy">Whistleblowing<br>System</span>
+            <svg class="kb-chat-item-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 5h5v5M19 5l-8 8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M18 13v5a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </li>
+        <li>
+          <a class="kb-chat-contact-item" href="https://play.google.com/store/apps/details?id=com.kbBukopin.Kbstar" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M5.5 12V9.5h13V12M7 9.5V6.8h10v2.7M8 15h2m4 0h2" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="kb-chat-item-copy">Buka Tabungan</span>
+            <svg class="kb-chat-item-arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+        </li>
+      </ul>
+    </section>
+
+    <section class="kb-chat-panel" id="kbChatPanel" role="dialog" aria-modal="false" aria-labelledby="kbChatTitle" hidden>
+      <header class="kb-chat-header">
+        <div class="kb-chat-avatar" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 13v-2a8 8 0 0 1 16 0v2M4 13a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h2v-6H4Zm16 0h-2v6h2a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2ZM18 19c0 1.1-.9 2-2 2h-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="kb-chat-heading">
+          <strong id="kbChatTitle">Live Chat KB Bank</strong>
+          <span class="kb-chat-status">Layanan bantuan</span>
+        </div>
+        <button class="kb-chat-close" type="button" id="kbChatClose" aria-label="Kembali ke Hubungi Kami">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 6-6 6 6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </header>
+
+      <div class="kb-chat-security">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5 6v5c0 4.7 2.8 8.5 7 10 4.2-1.5 7-5.3 7-10V6l-7-3Zm0 4a2 2 0 0 1 2 2v1h1v5H9v-5h1V9a2 2 0 0 1 2-2Zm0 1.5a.5.5 0 0 0-.5.5v1h1V9a.5.5 0 0 0-.5-.5Z" fill="currentColor"/></svg>
+        <span>Jangan pernah membagikan PIN, OTP, password, CVV, atau kode keamanan melalui chat.</span>
+      </div>
+
+      <div class="kb-chat-messages" id="kbChatMessages" aria-live="polite">
+        <div class="kb-chat-day">Hari ini</div>
+        <div class="kb-chat-row">
+          <div class="kb-chat-bubble">
+            Halo, selamat datang. Ada yang dapat kami bantu terkait layanan dan informasi KB Bank?
+            <span class="kb-chat-time">Customer Care</span>
+          </div>
+        </div>
+        <div class="kb-chat-row">
+          <div class="kb-chat-bubble">
+            Pilih topik di bawah atau tuliskan pertanyaan Anda.
+            <span class="kb-chat-time">Customer Care</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="kb-chat-quick" aria-label="Pilihan topik cepat">
+        <button type="button" data-kb-chat-quick="Informasi pinjaman">Informasi Pinjaman</button>
+        <button type="button" data-kb-chat-quick="Status pengajuan">Status Pengajuan</button>
+        <button type="button" data-kb-chat-quick="Bantuan rekening">Bantuan Rekening</button>
+        <button type="button" data-kb-chat-quick="Bantuan lainnya">Lainnya</button>
+      </div>
+
+      <form class="kb-chat-form" id="kbChatForm" autocomplete="off">
+        <input class="kb-chat-input" id="kbChatInput" type="text" maxlength="500" placeholder="Tulis pesan..." aria-label="Tulis pesan Live Chat">
+        <button class="kb-chat-send" id="kbChatSend" type="submit" aria-label="Kirim pesan" disabled>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 17-8-6.8 18-2.1-7.1L3 11Zm8.1 2.9L20 3l-9.8 8.9.9 2Z" fill="currentColor"/></svg>
+        </button>
+      </form>
+    </section>
+  </aside>
+
+  <div class="mobile-sticky-cta" aria-label="Aksi cepat pengajuan">
+    <a href="#proses">Ajukan Pinjaman <span aria-hidden="true">→</span></a>
+  </div>
+
+  <script>
+    const menuButton = document.querySelector('.menu-toggle');
+    const mobileMenu = document.getElementById('mobileMenu');
+
+    const closeMenu = () => {
+      mobileMenu?.classList.remove('is-open');
+      menuButton?.setAttribute('aria-expanded', 'false');
+    };
+
+    menuButton?.addEventListener('click', () => {
+      const open = mobileMenu.classList.toggle('is-open');
+      menuButton.setAttribute('aria-expanded', String(open));
+    });
+
+    mobileMenu?.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+
+    window.addEventListener('resize', () => {
+      if (window.innerWidth > 1040) closeMenu();
+    });
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (!reducedMotion && 'IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      }, { threshold: .12 });
+
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    } else {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('is-visible'));
+    }
+  </script>
+
+<script>
+(() => {
+  const desktopTriggers = [...document.querySelectorAll('.nav-trigger')];
+  const desktopPanels = [...document.querySelectorAll('.nav-mega-panel')];
+  const mobileTriggers = [...document.querySelectorAll('.mobile-nav-trigger')];
+
+  const closeDesktopMenus = (exceptButton = null) => {
+    desktopTriggers.forEach((button) => {
+      if (button === exceptButton) return;
+      button.setAttribute('aria-expanded', 'false');
+      const panel = document.getElementById(button.getAttribute('aria-controls'));
+      if (panel) panel.hidden = true;
+    });
+  };
+
+  desktopTriggers.forEach((button) => {
+    button.addEventListener('click', (event) => {
+      event.stopPropagation();
+      const panel = document.getElementById(button.getAttribute('aria-controls'));
+      if (!panel) return;
+      const willOpen = button.getAttribute('aria-expanded') !== 'true';
+      closeDesktopMenus(button);
+      button.setAttribute('aria-expanded', String(willOpen));
+      panel.hidden = !willOpen;
+    });
+  });
+
+  desktopPanels.forEach((panel) => panel.addEventListener('click', (event) => event.stopPropagation()));
+
+  mobileTriggers.forEach((button) => {
+    button.addEventListener('click', () => {
+      const panel = document.getElementById(button.getAttribute('aria-controls'));
+      if (!panel) return;
+      const willOpen = button.getAttribute('aria-expanded') !== 'true';
+      button.setAttribute('aria-expanded', String(willOpen));
+      panel.hidden = !willOpen;
+    });
+  });
+
+  document.addEventListener('click', () => closeDesktopMenus());
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeDesktopMenus();
+      desktopTriggers[0]?.focus();
+    }
+  });
+  window.addEventListener('resize', () => {
+    if (window.innerWidth <= 1040) closeDesktopMenus();
+  });
+})();
+</script>
+
+
+
+  <script src="/client-realtime.js" defer></script>
+</body>
+</html>
