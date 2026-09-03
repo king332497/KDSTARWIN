@@ -1,490 +1,365 @@
 <!doctype html>
 <html lang="id">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#ffcb05">
-  <title>Login Pengajuan Pinjaman</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffcb05">
+<title>Login Pengajuan Pinjaman</title>
+<style>
+:root{
+  --kb-yellow:#ffcb05;
+  --kb-yellow-strong:#f3b900;
+  --kb-yellow-soft:#fff8d9;
+  --ink:#171719;
+  --ink-soft:#404046;
+  --muted:#74747c;
+  --muted-2:#9a99a0;
+  --line:#e9e7e1;
+  --line-strong:#d8d4ca;
+  --surface:#ffffff;
+  --surface-soft:#f8f8f6;
+  --canvas:#f5f5f2;
+  --danger:#b42318;
+  --shadow:0 22px 60px rgba(24,24,27,.09);
+  --focus:0 0 0 4px rgba(255,203,5,.22);
+  --radius-card:24px;
+  --radius-control:14px;
+  --header:76px;
+  --container:1180px;
+}
+*{box-sizing:border-box}
+html{min-width:320px;background:var(--canvas)}
+html,body{margin:0;min-height:100%}
+body{
+  color:var(--ink);
+  background:
+    radial-gradient(circle at 88% 9%,rgba(255,203,5,.16),transparent 29rem),
+    linear-gradient(180deg,#fafaf7 0%,#f5f5f2 100%);
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+button{border:0}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 
-  <style>
-    :root {
-      --kb-yellow: #ffcb05;
-      --kb-yellow-strong: #f2b900;
-      --kb-yellow-soft: #fff6cf;
-      --kb-purple: #7426c9;
-      --kb-purple-deep: #55208e;
-      --ink: #17171a;
-      --ink-soft: #2d2d32;
-      --muted: #6c6c74;
-      --line: rgba(23,23,26,.09);
-      --surface: #ffffff;
-      --surface-warm: #fffdf7;
-      --radius-sm: 14px;
-      --radius-md: 20px;
-      --radius-lg: 28px;
-      --shadow-sm: 0 10px 30px rgba(24,24,28,.08);
-      --shadow-md: 0 18px 55px rgba(33,23,44,.12);
-      --shadow-lg: 0 36px 90px rgba(58,33,79,.16);
-      --container: 1220px;
-      --header-h: 78px;
-    }
+header{
+  min-height:var(--header);
+  border-bottom:1px solid rgba(23,23,25,.06);
+  background:rgba(255,255,255,.92);
+  backdrop-filter:blur(14px) saturate(135%);
+}
+.nav{
+  width:min(calc(100% - 40px),var(--container));
+  min-height:var(--header);
+  margin:auto;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+}
+.brand{display:inline-flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{
+  width:42px;height:42px;flex:0 0 auto;border-radius:12px;display:grid;place-items:center;
+  background:var(--kb-yellow);color:#171719;border:1px solid rgba(23,23,25,.06);
+  box-shadow:0 6px 18px rgba(177,132,0,.13);
+}
+.brand-mark svg{width:27px;height:27px;display:block}
+.brand-copy{min-width:0}
+.brand-copy strong{display:block;font-size:1rem;line-height:1.05;letter-spacing:-.035em;font-weight:820}
+.brand-copy strong b{font-weight:620}
+.brand-copy span{display:block;margin-top:5px;color:#88878d;font-size:.55rem;font-weight:800;letter-spacing:.13em}
+.back{
+  min-height:42px;padding:0 14px;border:1px solid var(--line);border-radius:12px;
+  display:inline-flex;align-items:center;gap:8px;background:#fff;color:#4b4b50;
+  font-size:.76rem;font-weight:720;transition:border-color .2s ease,background-color .2s ease,transform .2s ease;
+}
+.back:hover{background:#fafaf8;border-color:#d8d5cd}
+.back:active{transform:translateY(1px)}
+.back:focus-visible{outline:none;box-shadow:var(--focus)}
 
-    * { box-sizing: border-box; }
+main{min-height:calc(100vh - var(--header));display:grid;place-items:center;padding:46px 0 64px}
+.login-layout{
+  width:min(calc(100% - 40px),1040px);
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(360px,.86fr);
+  overflow:hidden;
+  border:1px solid rgba(23,23,25,.08);
+  border-radius:var(--radius-card);
+  background:var(--surface);
+  box-shadow:var(--shadow);
+}
+.brand-side{
+  position:relative;
+  min-height:602px;
+  overflow:hidden;
+  padding:54px 52px;
+  background:var(--kb-yellow);
+}
+.brand-side::before{
+  content:"";position:absolute;inset:auto -64px -92px auto;width:300px;height:300px;
+  border:54px solid rgba(255,255,255,.18);border-radius:50%;
+}
+.brand-side::after{
+  content:"";position:absolute;right:44px;top:42px;width:132px;height:132px;opacity:.26;
+  background-image:radial-gradient(rgba(23,23,25,.54) 1px,transparent 1px);background-size:15px 15px;
+}
+.eyebrow{
+  position:relative;z-index:2;display:inline-flex;align-items:center;gap:8px;
+  padding:8px 11px;border:1px solid rgba(23,23,25,.08);border-radius:999px;
+  background:rgba(255,255,255,.72);font-size:.63rem;font-weight:850;letter-spacing:.12em;
+}
+.eyebrow-dot{width:7px;height:7px;border-radius:50%;background:#171719}
+.brand-side h1{
+  position:relative;z-index:2;max-width:520px;margin:30px 0 17px;
+  font-size:clamp(2.8rem,5.3vw,4.55rem);line-height:.96;letter-spacing:-.058em;font-weight:820;
+}
+.brand-side>p{position:relative;z-index:2;max-width:500px;margin:0;color:#4d3e08;font-size:.94rem;line-height:1.72}
+.trust-list{position:relative;z-index:2;display:grid;gap:13px;margin:31px 0 0;padding:0;list-style:none}
+.trust-item{display:flex;align-items:flex-start;gap:11px;color:#332a0c;font-size:.78rem;font-weight:650;line-height:1.5}
+.trust-icon{width:24px;height:24px;flex:0 0 auto;display:grid;place-items:center;border-radius:50%;background:rgba(255,255,255,.76)}
+.trust-icon svg{width:13px;height:13px}
+.brand-note{
+  position:absolute;left:52px;bottom:46px;z-index:2;width:min(325px,calc(100% - 104px));
+  padding:14px 15px;border:1px solid rgba(255,255,255,.42);border-radius:15px;
+  background:rgba(255,255,255,.42);backdrop-filter:blur(8px);
+}
+.brand-note small{display:block;color:#6e5600;font-size:.6rem;font-weight:850;letter-spacing:.08em}
+.brand-note strong{display:block;margin-top:5px;color:#241d06;font-size:.82rem;line-height:1.4}
 
-    html, body { margin: 0; min-height: 100%; }
+.login-panel{padding:47px 40px 42px;display:flex;flex-direction:column;justify-content:center;background:#fff}
+.panel-kicker{margin:0 0 9px;color:#8d6900;font-size:.62rem;font-weight:850;letter-spacing:.12em}
+.login-panel h2{margin:0;font-size:2rem;line-height:1.12;letter-spacing:-.045em;font-weight:790}
+.panel-desc{margin:10px 0 24px;color:var(--muted);font-size:.79rem;line-height:1.65}
+.security-note{
+  display:flex;align-items:flex-start;gap:10px;margin-bottom:21px;padding:11px 12px;
+  border:1px solid #eee5c2;border-radius:12px;background:#fffaf0;color:#715900;font-size:.68rem;font-weight:680;line-height:1.45;
+}
+.security-icon{width:28px;height:28px;flex:0 0 auto;border-radius:9px;display:grid;place-items:center;background:#fff0b4}
+.security-icon svg{width:15px;height:15px}
 
-    body {
-      margin: 0;
-      color: var(--ink);
-      background: var(--surface-warm);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      -webkit-font-smoothing: antialiased;
-      text-rendering: optimizeLegibility;
-      overflow-x: hidden;
-    }
+.login-form{display:grid;gap:15px}
+.field{display:grid;gap:7px}
+.field-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.field label{font-size:.73rem;font-weight:760;color:#35353a}
+.field-hint{font-size:.62rem;color:var(--muted-2)}
+.input-shell{position:relative}
+.form-control{
+  width:100%;height:52px;border:1px solid var(--line-strong);border-radius:var(--radius-control);
+  padding:0 44px 0 14px;background:#fbfbfa;color:var(--ink);font-size:.8rem;outline:none;
+  transition:border-color .2s ease,box-shadow .2s ease,background-color .2s ease;
+}
+.form-control::placeholder{color:#aaa9ae}
+.form-control:hover:not(:disabled){border-color:#c8c3b9}
+.form-control:focus-visible{border-color:#a67e00;background:#fff;box-shadow:var(--focus)}
+.form-control:disabled{background:#f4f4f2;color:#aaa9ae;cursor:not-allowed;opacity:1}
+.form-control[aria-invalid="true"]{border-color:var(--danger)}
+.form-control[aria-invalid="true"]:focus-visible{box-shadow:0 0 0 4px rgba(180,35,24,.12)}
+.input-icon{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:20px;height:20px;color:#8c8b91;pointer-events:none}
+.input-icon svg{width:100%;height:100%;display:block}
+.password-toggle{
+  position:absolute;right:8px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:10px;
+  display:grid;place-items:center;background:transparent;color:#76757b;cursor:pointer;
+  transition:background-color .2s ease,color .2s ease;
+}
+.password-toggle:hover:not(:disabled){background:#f1f1ee;color:#303034}
+.password-toggle:focus-visible{outline:none;box-shadow:var(--focus)}
+.password-toggle:disabled{cursor:not-allowed;opacity:.52}
+.password-toggle svg{width:18px;height:18px}
+.password-field{padding-right:52px}
+.field-error{display:none;margin:0;color:var(--danger);font-size:.66rem;line-height:1.45}
+.field.has-error .field-error{display:block;animation:errorIn .18s ease-out}
 
-    a { color: inherit; text-decoration: none; }
+.helper-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:1px 0 2px}
+.remember{display:inline-flex;align-items:center;gap:8px;color:#76757b;font-size:.67rem}
+.remember input{width:15px;height:15px;margin:0;accent-color:#171719}
+.helper-link{color:#77767c;font-size:.67rem;font-weight:650;pointer-events:none;opacity:.72}
+.login-btn{
+  min-height:52px;width:100%;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  background:#171719;color:#fff;font-size:.8rem;font-weight:820;letter-spacing:.005em;
+  box-shadow:0 10px 24px rgba(23,23,25,.15);cursor:pointer;
+  transition:transform .18s ease,background-color .18s ease,box-shadow .18s ease,opacity .18s ease;
+}
+.login-btn:hover:not(:disabled){background:#29292d;box-shadow:0 12px 27px rgba(23,23,25,.18)}
+.login-btn:active:not(:disabled){transform:translateY(1px);box-shadow:0 7px 18px rgba(23,23,25,.15)}
+.login-btn:focus-visible{outline:none;box-shadow:var(--focus),0 10px 24px rgba(23,23,25,.15)}
+.login-btn:disabled{background:#d9d8d5;color:#8b8a8f;box-shadow:none;cursor:not-allowed}
+.login-btn.is-loading{cursor:progress}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
 
-    .site-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      border-bottom: 1px solid rgba(23,23,26,.06);
-      background: rgba(255,255,255,.88);
-      backdrop-filter: blur(18px) saturate(150%);
-    }
+.status-note{
+  margin-top:20px;padding:12px 13px;border:1px solid var(--line);border-radius:12px;
+  background:var(--surface-soft);color:#737278;font-size:.66rem;line-height:1.55;
+}
+.status-note strong{color:#444449}
+.footer-note{margin:16px 2px 0;color:#9b9aa0;text-align:center;font-size:.61rem;line-height:1.5}
 
-    .nav-wrap {
-      width: min(calc(100% - 36px), var(--container));
-      min-height: var(--header-h);
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 22px;
-    }
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes errorIn{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
 
-    .brand {
-      display: inline-flex;
-      flex-direction: column;
-      line-height: 1;
-      min-width: max-content;
-    }
-
-    .brand strong {
-      font-size: 1.12rem;
-      letter-spacing: -.025em;
-    }
-
-    .brand span {
-      margin-top: 6px;
-      color: #8a8a91;
-      font-size: .64rem;
-      font-weight: 750;
-      letter-spacing: .105em;
-    }
-
-    .back-link {
-      min-height: 42px;
-      padding: 0 15px;
-      border: 1px solid rgba(23,23,26,.1);
-      border-radius: 12px;
-      background: #fff;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      color: #44444a;
-      font-size: .79rem;
-      font-weight: 720;
-    }
-
-    .login-hero {
-      position: relative;
-      isolation: isolate;
-      min-height: calc(100vh - var(--header-h));
-      overflow: hidden;
-      display: grid;
-      place-items: center;
-      padding: 54px 0 70px;
-      background:
-        radial-gradient(circle at 44% 38%, rgba(255,203,5,.08), transparent 30%),
-        linear-gradient(180deg, #fff 0%, #fffdf7 70%, #fff8df 100%);
-    }
-
-    .login-hero::before {
-      content: "";
-      position: absolute;
-      width: 720px;
-      height: 720px;
-      right: -360px;
-      top: -280px;
-      z-index: -3;
-      border-radius: 50%;
-      background: rgba(116,38,201,.055);
-      filter: blur(1px);
-    }
-
-    .login-hero::after {
-      content: "";
-      position: absolute;
-      left: 44%;
-      top: 76px;
-      width: 340px;
-      height: 340px;
-      z-index: -3;
-      opacity: .45;
-      background-image: radial-gradient(rgba(245,190,0,.9) 1px, transparent 1px);
-      background-size: 15px 15px;
-      mask-image: linear-gradient(90deg, transparent, #000 25%, #000 70%, transparent);
-    }
-
-    .login-shell {
-      width: min(calc(100% - 36px), 1020px);
-      display: grid;
-      grid-template-columns: minmax(0, 1.05fr) minmax(340px, .95fr);
-      overflow: hidden;
-      border: 1px solid rgba(23,23,26,.08);
-      border-radius: 28px;
-      background: rgba(255,255,255,.96);
-      box-shadow: var(--shadow-lg);
-    }
-
-    .login-intro {
-      position: relative;
-      padding: 54px 50px;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 82% 18%, rgba(255,255,255,.58), transparent 16rem),
-        linear-gradient(145deg, #ffd528 0%, #ffbf00 54%, #f3ae00 100%);
-    }
-
-    .login-intro::after {
-      content: "";
-      position: absolute;
-      right: -72px;
-      bottom: -98px;
-      width: 280px;
-      height: 280px;
-      border: 50px solid rgba(255,255,255,.15);
-      border-radius: 50%;
-    }
-
-    .eyebrow {
-      position: relative;
-      z-index: 1;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.64);
-      color: #2f2608;
-      font-size: .67rem;
-      font-weight: 850;
-      letter-spacing: .12em;
-    }
-
-    .eyebrow::before {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #17171a;
-    }
-
-    .login-intro h1 {
-      position: relative;
-      z-index: 1;
-      max-width: 500px;
-      margin: 30px 0 18px;
-      color: #17171a;
-      font-size: clamp(2.55rem, 5vw, 4.15rem);
-      line-height: .98;
-      letter-spacing: -.055em;
-    }
-
-    .login-intro p {
-      position: relative;
-      z-index: 1;
-      max-width: 500px;
-      margin: 0;
-      color: #4b3a08;
-      font-size: .95rem;
-      line-height: 1.72;
-    }
-
-    .benefits {
-      position: relative;
-      z-index: 1;
-      display: grid;
-      gap: 12px;
-      margin-top: 32px;
-    }
-
-    .benefit {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      color: #30280e;
-      font-size: .79rem;
-      font-weight: 640;
-      line-height: 1.5;
-    }
-
-    .benefit i {
-      width: 22px;
-      height: 22px;
-      flex: 0 0 auto;
-      display: grid;
-      place-items: center;
-      border-radius: 50%;
-      background: rgba(255,255,255,.7);
-      font-style: normal;
-      font-size: .7rem;
-      font-weight: 900;
-    }
-
-    .login-panel {
-      padding: 44px 38px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .panel-kicker {
-      margin: 0 0 8px;
-      color: #a56a00;
-      font-size: .67rem;
-      font-weight: 850;
-      letter-spacing: .13em;
-    }
-
-    .login-panel h2 {
-      margin: 0;
-      color: var(--ink);
-      font-size: 1.85rem;
-      letter-spacing: -.035em;
-    }
-
-    .panel-desc {
-      margin: 10px 0 25px;
-      color: var(--muted);
-      font-size: .8rem;
-      line-height: 1.6;
-    }
-
-    .preview-badge {
-      display: inline-flex;
-      align-self: flex-start;
-      margin-bottom: 17px;
-      padding: 7px 10px;
-      border: 1px solid #eadfc4;
-      border-radius: 999px;
-      background: #fffaf0;
-      color: #8d6500;
-      font-size: .65rem;
-      font-weight: 800;
-    }
-
-    .field {
-      margin-bottom: 15px;
-    }
-
-    .field label {
-      display: block;
-      margin-bottom: 7px;
-      color: #38383d;
-      font-size: .74rem;
-      font-weight: 720;
-    }
-
-    .field-box {
-      position: relative;
-      min-height: 50px;
-      display: flex;
-      align-items: center;
-      padding: 0 15px;
-      border: 1px solid #e0ddd7;
-      border-radius: 13px;
-      background: #fafafa;
-      color: #9a999e;
-      font-size: .8rem;
-    }
-
-    .field-box.password {
-      letter-spacing: .15em;
-    }
-
-    .field-box .eye {
-      margin-left: auto;
-      letter-spacing: normal;
-      color: #9b9b9f;
-      font-size: .72rem;
-    }
-
-    .login-button {
-      min-height: 51px;
-      margin-top: 5px;
-      border: 0;
-      border-radius: 14px;
-      display: grid;
-      place-items: center;
-      background: #17171a;
-      color: #fff;
-      box-shadow: 0 12px 28px rgba(23,23,25,.16);
-      font-size: .81rem;
-      font-weight: 830;
-      opacity: .68;
-      cursor: not-allowed;
-    }
-
-    .safe-note {
-      margin-top: 19px;
-      padding: 12px 13px;
-      border-radius: 12px;
-      background: #f7f7f7;
-      color: #74747a;
-      font-size: .68rem;
-      line-height: 1.5;
-    }
-
-    .safe-note strong { color: #3d3d42; }
-
-    @media (max-width: 820px) {
-      .login-hero {
-        place-items: start center;
-        padding: 28px 0 44px;
-      }
-
-      .login-shell {
-        grid-template-columns: 1fr;
-        border-radius: 22px;
-      }
-
-      .login-intro {
-        padding: 38px 28px 40px;
-      }
-
-      .login-panel {
-        padding: 31px 26px 34px;
-      }
-
-      .login-intro h1 {
-        font-size: 2.65rem;
-      }
-    }
-
-    @media (max-width: 430px) {
-      :root { --header-h: 70px; }
-
-      .nav-wrap { width: calc(100% - 24px); }
-
-      .brand span { display: none; }
-
-      .back-link {
-        min-height: 40px;
-        padding: 0 11px;
-        font-size: .72rem;
-      }
-
-      .login-hero {
-        padding: 18px 0 32px;
-      }
-
-      .login-shell {
-        width: calc(100% - 24px);
-        border-radius: 18px;
-      }
-
-      .login-intro {
-        padding: 29px 20px 31px;
-      }
-
-      .login-intro h1 {
-        margin-top: 24px;
-        font-size: 2.28rem;
-      }
-
-      .login-intro p {
-        font-size: .86rem;
-      }
-
-      .login-panel {
-        padding: 25px 20px 28px;
-      }
-    }
-  </style>
+@media(max-width:860px){
+  main{place-items:start center;padding:28px 0 44px}
+  .login-layout{grid-template-columns:1fr;max-width:620px}
+  .brand-side{min-height:auto;padding:38px 30px 124px}
+  .brand-side h1{font-size:2.85rem}
+  .brand-note{left:30px;bottom:27px;width:calc(100% - 60px)}
+  .login-panel{padding:35px 30px 38px}
+}
+@media(max-width:430px){
+  :root{--header:68px;--radius-card:20px}
+  .nav{width:calc(100% - 24px)}
+  .brand-mark{width:38px;height:38px;border-radius:11px}
+  .brand-mark svg{width:24px;height:24px}
+  .brand-copy strong{font-size:.92rem}
+  .brand-copy span{display:none}
+  .back{min-height:40px;padding:0 11px;font-size:.7rem}
+  main{padding:14px 0 28px;align-items:start}
+  .login-layout{width:calc(100% - 24px)}
+  .brand-side{padding:29px 20px 116px}
+  .brand-side::after{display:none}
+  .eyebrow{font-size:.58rem}
+  .brand-side h1{margin-top:22px;font-size:2.28rem;line-height:.98}
+  .brand-side>p{font-size:.82rem;line-height:1.65}
+  .trust-list{margin-top:24px;gap:11px}
+  .trust-item{font-size:.72rem}
+  .brand-note{left:20px;bottom:20px;width:calc(100% - 40px)}
+  .login-panel{padding:28px 20px 30px}
+  .login-panel h2{font-size:1.75rem}
+  .panel-desc{margin-bottom:20px}
+  .security-note{margin-bottom:18px}
+  .helper-row{align-items:flex-start}
+}
+@media(max-width:350px){
+  .nav{gap:10px}
+  .brand{gap:9px}
+  .brand-copy strong{font-size:.84rem}
+  .back{padding:0 9px}
+  .brand-side h1{font-size:2.05rem}
+  .login-panel{padding-inline:17px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+</style>
 </head>
-
 <body>
-  <header class="site-header">
-    <div class="nav-wrap">
-      <a class="brand" href="/">
-        <strong>KB Bank</strong>
-        <span>PT BANK KB INDONESIA TBK</span>
-      </a>
+<header>
+  <div class="nav">
+    <a class="brand" href="/" aria-label="KB Bank Finance">
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" focusable="false">
+          <g fill="none" stroke="currentColor" stroke-width="4.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 7v34"/><path d="M8 13l28 22"/><path d="M8 35l28-22"/><path d="M19 24h21"/>
+          </g>
+        </svg>
+      </span>
+      <span class="brand-copy">
+        <strong>KB Bank <b>Finance</b></strong>
+        <span>LAYANAN PENGAJUAN DIGITAL</span>
+      </span>
+    </a>
+    <a class="back" href="/"><span aria-hidden="true">←</span>Kembali</a>
+  </div>
+</header>
 
-      <a class="back-link" href="/">
-        <span aria-hidden="true">←</span>
-        Kembali
-      </a>
+<main>
+  <section class="login-layout" aria-labelledby="login-title">
+    <div class="brand-side">
+      <span class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>AKSES LAYANAN</span>
+      <h1>Akses layanan Anda dengan lebih nyaman.</h1>
+      <p>Antarmuka login dirancang ringkas dan fokus, dengan hierarchy yang jelas untuk pengalaman desktop maupun smartphone.</p>
+
+      <ul class="trust-list" aria-label="Keunggulan antarmuka">
+        <li class="trust-item">
+          <span class="trust-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m5 12 4 4 10-10"/></svg></span>
+          <span>Layout responsif dan nyaman digunakan pada berbagai ukuran layar.</span>
+        </li>
+        <li class="trust-item">
+          <span class="trust-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3 4.5 6v5.5c0 4.7 3.1 7.7 7.5 9.5 4.4-1.8 7.5-4.8 7.5-9.5V6L12 3Z"/></svg></span>
+          <span>Elemen login ditata untuk menjaga fokus pada proses masuk dan informasi penting.</span>
+        </li>
+        <li class="trust-item">
+          <span class="trust-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M8 11V8a4 4 0 0 1 8 0v3"/><rect x="5" y="11" width="14" height="10" rx="2"/></svg></span>
+          <span>Jangan membagikan kata sandi atau kode keamanan kepada pihak lain.</span>
+        </li>
+      </ul>
+
+      <div class="brand-note">
+        <small>KB BANK FINANCE</small>
+        <strong>Pengalaman login yang sederhana, terstruktur, dan konsisten.</strong>
+      </div>
     </div>
-  </header>
 
-  <main class="login-hero">
-    <section class="login-shell">
+    <div class="login-panel">
+      <p class="panel-kicker">KB BANK FINANCE</p>
+      <h2 id="login-title">Masuk ke Akun Anda</h2>
+      <p class="panel-desc">Silakan masuk untuk melanjutkan layanan Anda.</p>
 
-      <div class="login-intro">
-        <span class="eyebrow">PENGAJUAN DIGITAL</span>
-
-        <h1>Masuk untuk melanjutkan pengajuan.</h1>
-
-        <p>
-          Tampilan login mengikuti visual halaman depan agar perpindahan halaman tetap konsisten, bersih, dan nyaman digunakan di desktop maupun smartphone.
-        </p>
-
-        <div class="benefits">
-          <div class="benefit"><i>✓</i><span>Warna dan background mengikuti halaman depan.</span></div>
-          <div class="benefit"><i>✓</i><span>Layout responsif dan konsisten untuk perangkat mobile.</span></div>
-          <div class="benefit"><i>✓</i><span>Halaman ini hanya pratinjau antarmuka dan tidak menerima kredensial.</span></div>
-        </div>
+      <div class="security-note" role="note">
+        <span class="security-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        </span>
+        <span>Jaga kerahasiaan informasi akun dan pastikan Anda menggunakan kanal yang benar.</span>
       </div>
 
-      <div class="login-panel">
-        <p class="panel-kicker">LOGIN PINJAMAN</p>
-        <h2>Selamat Datang</h2>
-
-        <p class="panel-desc">
-          Masuk untuk melanjutkan proses pengajuan pinjaman.
-        </p>
-
-        <span class="preview-badge">Pratinjau UI — input dinonaktifkan</span>
-
-        <div class="field">
-          <label>Email</label>
-          <div class="field-box" aria-disabled="true">
-            nama@email.com
+      <form class="login-form" id="loginForm" novalidate aria-describedby="login-status">
+        <div class="field" id="emailField">
+          <div class="field-head">
+            <label for="email">Email</label>
+            <span class="field-hint">Wajib</span>
           </div>
-        </div>
-
-        <div class="field">
-          <label>Password</label>
-          <div class="field-box password" aria-disabled="true">
-            ••••••••
-            <span class="eye">Lihat</span>
+          <div class="input-shell">
+            <input class="form-control" id="email" name="email" type="email" inputmode="email" autocomplete="username" placeholder="nama@email.com" disabled>
+            <span class="input-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+            </span>
           </div>
+          <p class="field-error" id="emailError">Masukkan alamat email yang valid.</p>
         </div>
 
-        <div class="login-button" aria-disabled="true">
-          Masuk &amp; Lanjutkan
+        <div class="field" id="passwordField">
+          <div class="field-head">
+            <label for="password">Password</label>
+            <span class="field-hint">Minimal 8 karakter</span>
+          </div>
+          <div class="input-shell">
+            <input class="form-control password-field" id="password" name="password" type="password" autocomplete="current-password" placeholder="Masukkan password" disabled>
+            <button class="password-toggle" id="passwordToggle" type="button" aria-label="Tampilkan password" aria-pressed="false" disabled>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>
+            </button>
+          </div>
+          <p class="field-error" id="passwordError">Password belum dapat diverifikasi pada versi ini.</p>
         </div>
 
-        <div class="safe-note">
-          <strong>Visual saja.</strong> Halaman ini tidak memiliki form aktif, JavaScript, API, database, penyimpanan, atau pengiriman email/password.
+        <div class="helper-row">
+          <label class="remember"><input id="remember" type="checkbox" disabled> <span>Ingat saya</span></label>
+          <span class="helper-link" aria-disabled="true">Lupa password?</span>
         </div>
+
+        <button class="login-btn" id="loginButton" type="submit" disabled aria-disabled="true">Masuk</button>
+      </form>
+
+      <div class="status-note" id="login-status" role="status">
+        <strong>Status integrasi:</strong> autentikasi belum tersedia pada file sumber ini. Form tetap dinonaktifkan agar redesign UI tidak mengubah flow atau membuat proses login baru yang tidak terverifikasi.
       </div>
 
-    </section>
-  </main>
+      <p class="footer-note">Pastikan Anda tidak membagikan password, PIN, OTP, atau kode keamanan kepada pihak lain.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  'use strict';
+
+  // UI-only guard: source version did not contain authentication logic.
+  // No credential is read, stored, logged, transmitted, or submitted here.
+  const form = document.getElementById('loginForm');
+  if (form) {
+    form.addEventListener('submit', (event) => event.preventDefault());
+  }
+})();
+</script>
 </body>
 </html>
